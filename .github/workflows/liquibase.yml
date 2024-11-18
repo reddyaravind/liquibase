@@ -41,10 +41,10 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://host.docker.internal:5432/staging_db" \
+          --referenceUrl="jdbc:postgresql://localhost:5432/staging_db" \
           --referenceUsername=aravindreddynarreddy \
           --referencePassword=postgres \
-          --url="jdbc:postgresql://host.docker.internal:5432/sandbox_db" \
+          --url="jdbc:postgresql://localhost:5432/sandbox_db" \
           --username=${{ secrets.DB_USERNAME }} \
           --password=${{ secrets.DB_PASSWORD }} \
           --changeLogFile="changelog_diff.xml" \
@@ -56,7 +56,7 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
-          --url="jdbc:postgresql://host.docker.internal:5432/sandbox_db" \
+          --url="jdbc:postgresql://localhost:5432/sandbox_db" \
           --username=${{ secrets.DB_USERNAME }} \
           --password=${{ secrets.DB_PASSWORD }} \
           --changeLogFile="changelog_diff.xml" \
@@ -68,7 +68,7 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
-          --url="jdbc:postgresql://host.docker.internal:5432/sandbox_db" \
+          --url="jdbc:postgresql://localhost:5432/sandbox_db" \
           --username=${{ secrets.DB_USERNAME }} \
           --password=${{ secrets.DB_PASSWORD }} \
           --changeLogFile="changelog_prod_generated.xml" \
