@@ -54,8 +54,8 @@ jobs:
     # Step 5: Push new changelog to GitHub
     - name: Push new changelog to GitHub
       run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "reddyaravind"
+        git config --global user.email "reddyaravind838@gmail.com"
         git add .
         git commit -m "Add new changelog from higher environment"
-        git push origin ${{ github.ref }}
+        git push -u origin main
