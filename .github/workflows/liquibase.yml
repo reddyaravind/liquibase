@@ -1,61 +1,67 @@
 name: Liquibase CI/CD Pipeline
 
 on:
-  workflow_dispatch: # Allows manual trigger of the workflow.
+  workflow_dispatch: # Allows manual triggering of the pipeline
 
 jobs:
-  liquibase-workflow:
+  liquibase-cicd:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the repository
-    - name: Checkout code
+    # Checkout the repository
+    - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Step 2: Generate diff changelog
-    - name: Generate diff changelog
+    # Set up Docker to use the Liquibase image
+    - name: Run Liquibase Docker Container
       run: |
         docker run --rm \
-          -v $(pwd):/liquibase/changelog \
+          -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl=${{ secrets.LOWER_DB_URL }} \
-          --referenceUsername=${{ secrets.DB_USERNAME }} \
-          --referencePassword=${{ secrets.DB_PASSWORD }} \
-          --url=${{ secrets.HIGHER_DB_URL }} \
-          --username=${{ secrets.DB_USERNAME }} \
-          --password=${{ secrets.DB_PASSWORD }} \
-          --changeLogFile=/liquibase/changelog/diff_changelog.xml \
+          --referenceUrl="jdbc:postgresql://staging_db_host:5432/staging_db" \
+          --referenceUsername="staging_user" \
+          --referencePassword="staging_password" \
+          --url="jdbc:postgresql://prod_db_host:5432/prod_db" \
+          --username="prod_user" \
+          --password="prod_password" \
+          --changeLogFile="changelog_diff.xml" \
           diffChangeLog
 
-    # Step 3: Apply changes to higher environment
-    - name: Apply changes to higher environment
+    # Apply the changes to the production database
+    - name: Apply Changes to Production
       run: |
         docker run --rm \
-          -v $(pwd):/liquibase/changelog \
+          -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
-          --url=${{ secrets.HIGHER_DB_URL }} \
-          --username=${{ secrets.DB_USERNAME }} \
-          --password=${{ secrets.DB_PASSWORD }} \
-          --changeLogFile=/liquibase/changelog/diff_changelog.xml \
+          --url="jdbc:postgresql://prod_db_host:5432/prod_db" \
+          --username="prod_user" \
+          --password="prod_password" \
+          --changeLogFile="changelog_diff.xml" \
           update
 
-    # Step 4: Generate new changelog from the higher environment
-    - name: Generate new changelog
+    # Generate a new changelog file from the production database
+    - name: Generate New Changelog
       run: |
         docker run --rm \
-          -v $(pwd):/liquibase/changelog \
+          -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
-          --url=${{ secrets.HIGHER_DB_URL }} \
-          --username=${{ secrets.DB_USERNAME }} \
-          --password=${{ secrets.DB_PASSWORD }} \
-          --changeLogFile=/liquibase/changelog/new_changelog.xml \
+          --url="jdbc:postgresql://prod_db_host:5432/prod_db" \
+          --username="prod_user" \
+          --password="prod_password" \
+          --changeLogFile="changelog_prod_generated.xml" \
           generateChangeLog
 
-    # Step 5: Push new changelog to GitHub
-    - name: Push new changelog to GitHub
+    # Commit and push the new changelog file to GitHub
+    - name: Push Changelog to GitHub
       run: |
-        git config --global user.name "reddyaravind"
-        git config --global user.email "reddyaravind838@gmail.com"
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git init
         git add .
-        git commit -m "Add new changelog from higher environment"
+        git commit -m "Updated changelog"
+        git branch -M main
+        git remote add origin https://github.com/reddyaravind/liquibase.git
         git push -u origin main
+      env:
+        # Set GitHub token to allow pushing to the repository
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
