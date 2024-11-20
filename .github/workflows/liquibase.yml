@@ -45,7 +45,7 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://localhost:5432/staging_db" \
+          --referenceUrl="jdbc:postgresql://localhost:5432/prod_db" \
           --referenceUsername="aravindreddynarreddy" \
           --referencePassword="password" \
           --url="jdbc:postgresql://localhost:5432/sandbox" \
