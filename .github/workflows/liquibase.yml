@@ -42,11 +42,11 @@ jobs:
           -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
           --referenceUrl="jdbc:postgresql://localhost:5432/staging_db" \
-          --referenceUsername=aravindreddynarreddy \
-          --referencePassword=password \
+          --referenceUsername="aravindreddynarreddy" \
+          --referencePassword="password" \
           --url="jdbc:postgresql://localhost:5432/sandbox_db" \
-          --username=aravindreddynarreddy \
-          --password=password \
+          --username="aravindreddynarreddy" \
+          --password="password" \
           --changeLogFile="changelog_diff.xml" \
           diffChangeLog
 
@@ -57,8 +57,8 @@ jobs:
           -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
           --url="jdbc:postgresql://localhost:5432/sandbox_db" \
-          --username=aravindreddynarreddy \
-          --password=password \
+          --username="aravindreddynarreddy" \
+          --password="password" \
           --changeLogFile="changelog_diff.xml" \
           update
 
@@ -69,8 +69,8 @@ jobs:
           -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
           --url="jdbc:postgresql://localhost:5432/sandbox_db" \
-          --username=aravindreddynarreddy \
-          --password=password \
+          --username="aravindreddynarreddy" \
+          --password="password" \
           --changeLogFile="changelog_prod_generated.xml" \
           generateChangeLog
 
