@@ -101,15 +101,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout code
+    # Step 1: Checkout Code
     - name: Checkout Code
       uses: actions/checkout@v3
 
     # Step 2: Create the changelog directory
-    - name: Ensure Changelog Directory Exists
+    - name: Create Changelog Directory
       run: mkdir -p ${{ github.workspace }}/changelog
 
-    # Step 3: Generate the diffChangeLog file
+    # Step 3: Run diffChangeLog
     - name: Generate Diff ChangeLog
       run: |
         docker run --rm \
@@ -124,22 +124,23 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
-    # Step 4: Debugging Step (Verify the changelog file exists on the host)
-    - name: Verify Changelog on Host
+    # Step 4: Debug and check generated changelog
+    - name: Verify Changelog Generation
       run: |
         echo "Checking changelog on host system:"
         ls -l ${{ github.workspace }}/changelog
-        cat ${{ github.workspace }}/changelog/changelog_diff.xml
+        if [ -f "${{ github.workspace }}/changelog/changelog_diff.xml" ]; then
+          echo "Changelog file exists and is ready for use."
+        else
+          echo "Changelog file was not generated. Debugging container..."
+          docker run --rm \
+            -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+            liquibase/liquibase \
+            ls -l /liquibase/changelog
+          exit 1
+        fi
 
-    # Step 5: Verify changelog path inside the container (additional debug)
-    - name: Debug Path Inside Container
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
-          liquibase/liquibase \
-          ls -l /liquibase/changelog
-
-    # Step 6: Apply changes to the production database
+    # Step 5: Apply changes to production
     - name: Apply Changes to Production
       run: |
         docker run --rm \
@@ -150,6 +151,7 @@ jobs:
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           update
+
 
     # Step 7: Final Confirmation
     - name: Confirm Changes Applied
