@@ -101,35 +101,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
+    # Step 1: Checkout the repository
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Generate Diff ChangeLog
-    - name: Run Liquibase to Generate Diff ChangeLog
+    # Step 2: Generate Diff ChangeLog and Save Path to Static Variable
+    - name: Generate Diff ChangeLog
+      id: generate_diff
       run: |
         mkdir -p ${{ github.workspace }}/changelog
+        changelog_path="${{ github.workspace }}/changelog/changelog_diff.xml"
+        
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
+          --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway" \
           --referenceUsername="postgres" \
-          --referencePassword="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
-          --url="jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway" \
+          --referencePassword="ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH" \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
-          --password="ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH" \
+          --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
-        ls -l ${{ github.workspace }}/changelog # Check if the file is created
 
-    # Debug: Check contents of the changelog directory
-    - name: Verify Changelog Directory
+        echo "changelog_path=$changelog_path" >> $GITHUB_ENV
+        echo "Diff ChangeLog generated successfully at $changelog_path"
+
+    # Step 3: Verify the Generated ChangeLog File
+    - name: Verify ChangeLog File
       run: |
-        echo "Listing files in changelog directory:"
-        ls -l ${{ github.workspace }}/changelog
-        cat ${{ github.workspace }}/changelog/changelog_diff.xml
+        if [ -f "${{ github.workspace }}/changelog/changelog_diff.xml" ]; then
+          echo "Changelog file exists and is ready for use."
+        else
+          echo "Changelog file not found!" && exit 1
+        fi
 
-    # Apply changes to production
+    # Step 4: Apply Changes to Production Database
     - name: Apply Changes to Production
       run: |
         docker run --rm \
@@ -138,29 +145,14 @@ jobs:
           --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
-          --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
+          --changeLogFile="${{ env.changelog_path }}" \
           update
-        echo "Changes applied successfully to production!"
 
-    # Generate a new changelog file from the production DB
-    - name: Generate New Changelog from Production DB
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
-          liquibase/liquibase \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
-          --username="postgres" \
-          --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
-          --changeLogFile="/liquibase/changelog/changelog_prod_generated.xml" \
-          generateChangeLog
+        echo "Changes applied successfully to the production database."
 
-    # Push the updated changelog to GitHub
-    - name: Push Changelog to GitHub
+    # Step 5: Cleanup (Optional)
+    - name: Cleanup
       run: |
-        git config --global user.name "reddyaravind"
-        git config --global user.email "reddyaravind838@gmail.com"
-        git add changelog/changelog_prod_generated.xml
-        git commit -m "Updated changelog"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        rm -rf ${{ github.workspace }}/changelog
+        echo "Temporary changelog files cleaned up."
+
