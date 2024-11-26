@@ -105,11 +105,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Create Liquibase Directory
+    # Create Liquibase Directory in the repository
     - name: Create Liquibase Directory
-      run: mkdir -p changelog
+      run: mkdir -p ${{ github.workspace }}/changelog
 
-    # Run Liquibase diffChangeLog
+    # Run Liquibase diffChangeLog to generate the changelog_diff.xml
     - name: Run Liquibase to Create Diff ChangeLog
       run: |
         docker run --rm \
@@ -124,13 +124,13 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
-    # List the contents of the changelog directory to check if the file is created
+    # Check the contents of the changelog directory
     - name: List Contents of Changelog Directory
       run: |
         echo "Listing contents of changelog directory:"
         ls -l ${{ github.workspace }}/changelog
 
-    # Check if the changelog_diff.xml was created
+    # Verify if changelog_diff.xml was created
     - name: Verify changelog_diff.xml Creation
       run: |
         if [ ! -f "${{ github.workspace }}/changelog/changelog_diff.xml" ]; then
@@ -140,7 +140,7 @@ jobs:
           echo "changelog_diff.xml found, proceeding with update."
         fi
 
-    # Apply changes to the higher environment (Production)
+    # Apply changes to the production environment
     - name: Apply Changes to Production
       run: |
         docker run --rm \
@@ -174,5 +174,6 @@ jobs:
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 
