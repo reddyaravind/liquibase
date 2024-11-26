@@ -105,11 +105,15 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
+    # Create Liquibase Directory
+    - name: Create Liquibase Directory
+      run: mkdir -p changelog
+
     # Run Liquibase diffChangeLog
     - name: Run Liquibase to Create Diff ChangeLog
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}:/liquibase/changelog \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
           --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway" \
           --referenceUsername="postgres" \
@@ -117,31 +121,31 @@ jobs:
           --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
-          --changeLogFile="changelog_diff.xml" \
+          --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
     # Apply changes to the higher environment (Production)
     - name: Apply Changes to Production
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}:/liquibase/changelog \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
           --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
-          --changeLogFile="changelog_diff.xml" \
+          --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           update
 
     # Generate a new changelog file from the production environment
     - name: Generate New Changelog from Production
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}:/liquibase/changelog \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
           --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
-          --changeLogFile="changelog_prod_generated.xml" \
+          --changeLogFile="/liquibase/changelog/changelog_prod_generated.xml" \
           generateChangeLog
 
     # Commit and push the new changelog file to GitHub
@@ -149,8 +153,9 @@ jobs:
       run: |
         git config --global user.name "reddyaravind"
         git config --global user.email "reddyaravind838@gmail.com"
-        git add changelog_prod_generated.xml
+        git add changelog/changelog_prod_generated.xml
         git commit -m "Updated changelog"
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
