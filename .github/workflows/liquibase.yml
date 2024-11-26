@@ -124,6 +124,16 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
+    # Check if the changelog_diff.xml was created
+    - name: Verify changelog_diff.xml Creation
+      run: |
+        if [ ! -f "${{ github.workspace }}/changelog/changelog_diff.xml" ]; then
+          echo "changelog_diff.xml was not created, exiting."
+          exit 1
+        else
+          echo "changelog_diff.xml found, proceeding with update."
+        fi
+
     # Apply changes to the higher environment (Production)
     - name: Apply Changes to Production
       run: |
