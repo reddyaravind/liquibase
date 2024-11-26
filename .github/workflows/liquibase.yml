@@ -148,7 +148,7 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
         # Save the changelog file content to a variable
-        changelog_content=$(cat /liquibase/changelog/changelog_diff.xml)
+        changelog_content=$(cat ${{ github.workspace }}/changelog/changelog_diff.xml)
         echo "changelog_content<<EOF" >> $GITHUB_ENV
         echo "$changelog_content" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
