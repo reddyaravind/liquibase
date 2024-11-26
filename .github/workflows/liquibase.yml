@@ -124,7 +124,7 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
-        echo "changelog_path=$changelog_path" >> $GITHUB_ENV
+        echo "changelog_path1=$changelog_path" >> $GITHUB_ENV
         echo "Diff ChangeLog generated successfully at $changelog_path"
 
     # Step 3: Verify the Generated ChangeLog File
@@ -139,13 +139,16 @@ jobs:
     # Step 4: Apply Changes to Production Database
     - name: Apply Changes to Production
       run: |
+        mkdir -p ${{ github.workspace }}/changelog
+        changelog_path="${{ github.workspace }}/changelog/changelog_diff.xml"
+        
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
           --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
-          --changeLogFile="${{ env.changelog_path }}" \
+          --changeLogFile="${{ env.changelog_path1 }}" \
           update
 
         echo "Changes applied successfully to the production database."
