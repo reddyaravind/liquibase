@@ -94,65 +94,57 @@
 name: Liquibase CI/CD Pipeline
 
 on:
-  workflow_dispatch: # Allows manual triggering of the pipeline
+  workflow_dispatch:
 
 jobs:
   liquibase-cicd:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the repository
+    # Step 1: Checkout code
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Step 2: Generate Diff ChangeLog and Save Path to Static Variable
+    # Step 2: Create the changelog directory (optional safeguard)
+    - name: Ensure Changelog Directory Exists
+      run: mkdir -p ${{ github.workspace }}/changelog
+
+    # Step 3: Generate the diffChangeLog file
     - name: Generate Diff ChangeLog
-      id: generate_diff
       run: |
-        mkdir -p ${{ github.workspace }}/changelog
-        changelog_path="${{ github.workspace }}/changelog/changelog_diff.xml"
-        
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway" \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
+          --username="postgres" \
+          --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
+          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --referenceUsername="postgres" \
-          --referencePassword="ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH" \
+          --referencePassword="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
+          --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
+          diffChangeLog
+
+    # Step 4: Debugging Step (Verify the generated changelog file)
+    - name: Verify Changelog File
+      run: ls -l ${{ github.workspace }}/changelog && cat ${{ github.workspace }}/changelog/changelog_diff.xml
+
+    # Step 5: Save the changelog file path in an environment variable
+    - name: Save Changelog Path
+      run: echo "changelog_path=${{ github.workspace }}/changelog/changelog_diff.xml" >> $GITHUB_ENV
+
+    # Step 6: Apply changes to the production database
+    - name: Apply Changes to Production
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          liquibase/liquibase \
           --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-          diffChangeLog
-
-        echo "changelog_path=$changelog_path" >> $GITHUB_ENV
-        echo "Diff ChangeLog generated successfully at $changelog_path"
-
-    # Step 3: Verify the Generated ChangeLog File
-    - name: Verify ChangeLog File
-      run: |
-        if [ -f "${{ github.workspace }}/changelog/changelog_diff.xml" ]; then
-          echo "Changelog file exists and is ready for use."
-        else
-          echo "Changelog file not found!" && exit 1
-        fi
-
-    # Step 4: Apply Changes to Production Database
-    - name: Apply Changes to Production
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}/changelog \
-          liquibase/liquibase \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
-          --username="postgres" \
-          --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
-          --changeLogFile="${{ env.changelog_path }}" \
           update
 
-        echo "Changes applied successfully to the production database."
-
-    # Step 5: Cleanup (Optional)
-    - name: Cleanup
+    # Step 7: Verify production changes
+    - name: Verify Production Changes
       run: |
-        rm -rf ${{ github.workspace }}/changelog
-        echo "Temporary changelog files cleaned up."
-
+        echo "Production database changes have been applied successfully!"
