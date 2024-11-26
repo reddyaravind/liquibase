@@ -132,8 +132,9 @@ jobs:
           sleep 2
         done
 
-    # Run Liquibase diffChangeLog to generate the changelog_diff.xml
-    - name: Run Liquibase to Create Diff ChangeLog
+    # Run Liquibase diffChangeLog to generate the changelog_diff.xml and save it to a variable
+    - name: Generate Diff ChangeLog and Save to Variable
+      id: generate_changelog
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/liquibase/changelog \
@@ -146,11 +147,16 @@ jobs:
           --password="ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
+        # Save the changelog file content to a variable
+        changelog_content=$(cat /liquibase/changelog/changelog_diff.xml)
+        echo "changelog_content<<EOF" >> $GITHUB_ENV
+        echo "$changelog_content" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
 
-    # Apply changes to the production environment (railway DB)
-    - name: Apply Changes to Production
+    # Recreate the changelog file from the saved variable and apply to production
+    - name: Recreate Changelog File and Apply to Production
       run: |
-        echo "Starting Liquibase Update on Production..."
+        echo "${{ env.changelog_content }}" > /liquibase/changelog/changelog_diff.xml
         docker run --rm \
           -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
@@ -158,9 +164,8 @@ jobs:
           --username="postgres" \
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-          update \
-          || { echo 'Liquibase update failed!'; exit 1; }
-        echo "Liquibase Update completed successfully!"
+          update
+        echo "Changes applied successfully to production!"
 
     # Generate a new changelog file from the production DB (railway DB)
     - name: Generate New Changelog from Production DB
@@ -184,3 +189,4 @@ jobs:
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
