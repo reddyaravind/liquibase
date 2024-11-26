@@ -124,6 +124,12 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
+    # List the contents of the changelog directory to check if the file is created
+    - name: List Contents of Changelog Directory
+      run: |
+        echo "Listing contents of changelog directory:"
+        ls -l ${{ github.workspace }}/changelog
+
     # Check if the changelog_diff.xml was created
     - name: Verify changelog_diff.xml Creation
       run: |
@@ -168,4 +174,5 @@ jobs:
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
