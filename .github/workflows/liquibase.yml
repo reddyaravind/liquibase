@@ -100,63 +100,73 @@ jobs:
   liquibase-cicd:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: aravindreddynarreddy
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: staging_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U aravindreddynarreddy"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
     # Checkout the repository
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Create Liquibase Directory in the repository
-    - name: Create Liquibase Directory
-      run: mkdir -p ${{ github.workspace }}/changelog
+    # Wait for PostgreSQL service to be ready
+    - name: Wait for PostgreSQL
+      run: |
+        for i in {1..30}; do
+          if pg_isready -h localhost -p 5432 -U aravindreddynarreddy; then
+            echo "PostgreSQL is ready!"
+            break
+          fi
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
 
     # Run Liquibase diffChangeLog to generate the changelog_diff.xml
     - name: Run Liquibase to Create Diff ChangeLog
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway" \
+          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --referenceUsername="postgres" \
-          --referencePassword="ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH" \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
+          --referencePassword="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
+          --url="jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway" \
           --username="postgres" \
-          --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
+          --password="ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
-    # Check the contents of the changelog directory
-    - name: List Contents of Changelog Directory
-      run: |
-        echo "Listing contents of changelog directory:"
-        ls -l ${{ github.workspace }}/changelog
-
-    # Verify if changelog_diff.xml was created
-    - name: Verify changelog_diff.xml Creation
-      run: |
-        if [ ! -f "${{ github.workspace }}/changelog/changelog_diff.xml" ]; then
-          echo "changelog_diff.xml was not created, exiting."
-          exit 1
-        else
-          echo "changelog_diff.xml found, proceeding with update."
-        fi
-
-    # Apply changes to the production environment
+    # Apply changes to the production environment (railway DB)
     - name: Apply Changes to Production
       run: |
+        echo "Starting Liquibase Update on Production..."
         docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
           --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-          update
+          update \
+          || { echo 'Liquibase update failed!'; exit 1; }
+        echo "Liquibase Update completed successfully!"
 
-    # Generate a new changelog file from the production environment
-    - name: Generate New Changelog from Production
+    # Generate a new changelog file from the production DB (railway DB)
+    - name: Generate New Changelog from Production DB
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          -v ${{ github.workspace }}:/liquibase/changelog \
           liquibase/liquibase \
           --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
@@ -169,11 +179,8 @@ jobs:
       run: |
         git config --global user.name "reddyaravind"
         git config --global user.email "reddyaravind838@gmail.com"
-        git add changelog/changelog_prod_generated.xml
+        git add changelog_prod_generated.xml
         git commit -m "Updated changelog"
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-
