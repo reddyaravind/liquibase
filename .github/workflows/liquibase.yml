@@ -1,93 +1,135 @@
-name: Liquibase CI/CD Pipeline
+# name: Liquibase CI/CD Pipeline
+
+# on:
+#   workflow_dispatch: # Allows manual triggering of the pipeline
+
+# jobs:
+#   liquibase-cicd:
+#     runs-on: ubuntu-latest
+
+#     services:
+#       postgres:
+#         image: postgres:15
+#         env:
+#           POSTGRES_USER: aravindreddynarreddy
+#           POSTGRES_PASSWORD: password
+#           POSTGRES_DB: staging_db
+#         ports:
+#           - 5432:5432
+#         options: >-
+#           --health-cmd="pg_isready -U aravindreddynarreddy"
+#           --health-interval=10s
+#           --health-timeout=5s
+#           --health-retries=3
+
+#     steps:
+#     # Checkout the repository
+#     - name: Checkout Code
+#       uses: actions/checkout@v3
+
+#     # Wait for PostgreSQL service to be ready
+#     - name: Wait for PostgreSQL
+#       run: |
+#         for i in {1..30}; do
+#           if pg_isready -h localhost -p 5432 -U aravindreddynarreddy; then
+#             echo "PostgreSQL is ready!"
+#             break
+#           fi
+#           echo "Waiting for PostgreSQL..."
+#           sleep 2
+#         done
+
+#     # Run Liquibase diffChangeLog
+#     - name: Run Liquibase to Create Diff ChangeLog
+#       run: |
+#         docker run --rm \
+#           -v ${{ github.workspace }}:/liquibase/changelog \
+#           liquibase/liquibase \
+#           --referenceUrl="jdbc:postgresql://localhost:5432/prod_db" \
+#           --referenceUsername="aravindreddynarreddy" \
+#           --referencePassword="password" \
+#           --url="jdbc:postgresql://localhost:5432/sandbox" \
+#           --username="aravindreddynarreddy" \
+#           --password="password" \
+#           --changeLogFile="changelog_diff.xml" \
+#           diffChangeLog
+
+#     # Apply changes to the higher environment (sandbox_db)
+#     - name: Apply Changes to Higher Environment
+#       run: |
+#         docker run --rm \
+#           -v ${{ github.workspace }}:/liquibase/changelog \
+#           liquibase/liquibase \
+#           --url="jdbc:postgresql://localhost:5432/sandbox" \
+#           --username="aravindreddynarreddy" \
+#           --password="password" \
+#           --changeLogFile="changelog_diff.xml" \
+#           update
+
+#     # Generate a new changelog file from the higher environment (sandbox_db)
+#     - name: Generate New Changelog from Sandbox DB
+#       run: |
+#         docker run --rm \
+#           -v ${{ github.workspace }}:/liquibase/changelog \
+#           liquibase/liquibase \
+#           --url="jdbc:postgresql://localhost:5432/sandbox" \
+#           --username="aravindreddynarreddy" \
+#           --password="password" \
+#           --changeLogFile="changelog_prod_generated.xml" \
+#           generateChangeLog
+
+#     # Commit and push the new changelog file to GitHub
+#     - name: Push Changelog to GitHub
+#       run: |
+#         git config --global user.name "reddyaravind"
+#         git config --global user.email "reddyaravind838@gmail.com"
+#         git add changelog_prod_generated.xml
+#         git commit -m "Updated changelog"
+#         git push
+#       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+name: Liquibase CI/CD
 
 on:
-  workflow_dispatch: # Allows manual triggering of the pipeline
+  workflow_dispatch: # Trigger manually
+  push:
+    branches:
+      - main
 
 jobs:
-  liquibase-cicd:
+  liquibase-diff-and-apply:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: aravindreddynarreddy
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: staging_db
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U aravindreddynarreddy"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     steps:
-    # Checkout the repository
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Wait for PostgreSQL service to be ready
-    - name: Wait for PostgreSQL
+    - name: Install Liquibase
       run: |
-        for i in {1..30}; do
-          if pg_isready -h localhost -p 5432 -U aravindreddynarreddy; then
-            echo "PostgreSQL is ready!"
-            break
-          fi
-          echo "Waiting for PostgreSQL..."
-          sleep 2
-        done
+        wget https://download.liquibase.org/downloads/liquibase-4.23.1.tar.gz
+        tar -xvf liquibase-4.23.1.tar.gz
+        sudo mv liquibase /usr/local/bin/liquibase
 
-    # Run Liquibase diffChangeLog
-    - name: Run Liquibase to Create Diff ChangeLog
+    - name: Generate Diff Log
       run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/liquibase/changelog \
-          liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://localhost:5432/prod_db" \
-          --referenceUsername="aravindreddynarreddy" \
-          --referencePassword="password" \
-          --url="jdbc:postgresql://localhost:5432/sandbox" \
-          --username="aravindreddynarreddy" \
-          --password="password" \
-          --changeLogFile="changelog_diff.xml" \
-          diffChangeLog
+        liquibase \
+          --url=jdbc:postgresql://junction.proxy.rlwy.net:59848/railway \
+          --username=postgres \
+          --password=oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc \
+          --referenceUrl=jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway \
+          --referenceUsername=postgres \
+          --referencePassword=ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH \
+          diffChangeLog \
+          --changeLogFile=diffChangeLog.xml
 
-    # Apply changes to the higher environment (sandbox_db)
-    - name: Apply Changes to Higher Environment
+    - name: Apply Changes to Production
       run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/liquibase/changelog \
-          liquibase/liquibase \
-          --url="jdbc:postgresql://localhost:5432/sandbox" \
-          --username="aravindreddynarreddy" \
-          --password="password" \
-          --changeLogFile="changelog_diff.xml" \
+        liquibase \
+          --url=jdbc:postgresql://junction.proxy.rlwy.net:59848/railway \
+          --username=postgres \
+          --password=oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc \
+          --changeLogFile=diffChangeLog.xml \
           update
-
-    # Generate a new changelog file from the higher environment (sandbox_db)
-    - name: Generate New Changelog from Sandbox DB
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}:/liquibase/changelog \
-          liquibase/liquibase \
-          --url="jdbc:postgresql://localhost:5432/sandbox" \
-          --username="aravindreddynarreddy" \
-          --password="password" \
-          --changeLogFile="changelog_prod_generated.xml" \
-          generateChangeLog
-
-    # Commit and push the new changelog file to GitHub
-    - name: Push Changelog to GitHub
-      run: |
-        git config --global user.name "reddyaravind"
-        git config --global user.email "reddyaravind838@gmail.com"
-        git add changelog_prod_generated.xml
-        git commit -m "Updated changelog"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-
