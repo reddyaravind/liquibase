@@ -140,7 +140,7 @@ jobs:
     - name: Apply Changes to Production
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          # -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
           --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
           --username="postgres" \
