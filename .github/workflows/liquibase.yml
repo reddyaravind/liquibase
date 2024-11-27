@@ -144,4 +144,4 @@ jobs:
           --username="${{ env.PRODUCTION_DB_USERNAME }}" \
           --password="${{ env.PRODUCTION_DB_PASSWORD }}" \
           --changeLogFile="file:/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
-          generateChangeLog
+          update
