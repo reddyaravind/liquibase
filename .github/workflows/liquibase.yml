@@ -113,18 +113,24 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
+    - name: Install Liquibase
+      run: |
+        LIQUIBASE_VERSION=4.30.0
+        curl -sSL https://github.com/liquibase/liquibase/releases/download/v${LIQUIBASE_VERSION}/liquibase-${LIQUIBASE_VERSION}.tar.gz -o liquibase.tar.gz
+        tar -xzf liquibase.tar.gz
+        sudo mv liquibase /usr/local/bin/liquibase
+        liquibase --version
+
     - name: Create Directory for Changelog
       run: mkdir -p ${{ github.workspace }}/changelog
 
     - name: Generate Changelog from Staging Database
       run: |
-        docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
-          liquibase/liquibase \
+        liquibase \
           --url="${{ env.STAGING_DB_URL }}" \
           --username="${{ env.STAGING_DB_USERNAME }}" \
           --password="${{ env.STAGING_DB_PASSWORD }}" \
-          --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
+          --changeLogFile="${{ github.workspace }}/changelog/${{ env.CHANGELOG_PATH }}" \
           generateChangeLog
 
     - name: Verify Changelog File
@@ -135,11 +141,9 @@ jobs:
 
     - name: Apply Changes to Production Database
       run: |
-        docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
-          liquibase/liquibase \
+        liquibase \
           --url="${{ env.PRODUCTION_DB_URL }}" \
           --username="${{ env.PRODUCTION_DB_USERNAME }}" \
           --password="${{ env.PRODUCTION_DB_PASSWORD }}" \
-          --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
+          --changeLogFile="${{ github.workspace }}/changelog/${{ env.CHANGELOG_PATH }}" \
           update
