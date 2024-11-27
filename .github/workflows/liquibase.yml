@@ -103,7 +103,7 @@ env:
   PRODUCTION_DB_URL: "jdbc:postgresql://junction.proxy.rlwy.net:59848/railway"
   PRODUCTION_DB_USERNAME: "postgres"
   PRODUCTION_DB_PASSWORD: "oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc"
-  CHANGELOG_PATH: "changelog/changelog_diff.xml"
+  CHANGELOG_PATH: "changelog_diff.xml"
 
 jobs:
   sync-staging-to-production:
