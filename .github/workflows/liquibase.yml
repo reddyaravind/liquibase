@@ -107,10 +107,7 @@ jobs:
 
     # Step 2: Create the changelog directory
     - name: Ensure Changelog Directory Exists
-      run: |
-        mkdir -p ${{ github.workspace }}/changelog
-        echo "Changelog directory exists:"
-        ls -l ${{ github.workspace }}/changelog
+      run: mkdir -p ${{ github.workspace }}/changelog
 
     # Step 3: Generate the diffChangeLog file
     - name: Generate Diff ChangeLog
@@ -125,15 +122,18 @@ jobs:
           --referenceUsername="postgres" \
           --referencePassword="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-          --logLevel=debug \
           diffChangeLog || (echo "Liquibase command failed" && exit 1)
 
     # Step 4: Debugging Step (Verify the changelog file exists on the host)
     - name: Verify Changelog on Host
       run: |
         echo "Checking changelog on host system:"
-        ls -l ${{ github.workspace }}/changelog
-        cat ${{ github.workspace }}/changelog/changelog_diff.xml || echo "Changelog file not found"
+        ls -l ${{ github.workspace }}/changelog || (echo "Changelog directory on host is empty" && exit 1)
+        if [ -f "${{ github.workspace }}/changelog/changelog_diff.xml" ]; then
+          cat ${{ github.workspace }}/changelog/changelog_diff.xml
+        else
+          echo "Changelog file not found in host directory"
+        fi
 
     # Step 5: Verify changelog path inside the container (additional debug)
     - name: Debug Path Inside Container
@@ -141,7 +141,7 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          ls -l /liquibase/changelog
+          ls -l /liquibase/changelog || (echo "Unable to list contents of /liquibase/changelog" && exit 1)
 
     # Step 6: Apply changes to the production database
     - name: Apply Changes to Production
@@ -153,7 +153,7 @@ jobs:
           --username="postgres" \
           --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-          update || (echo "Liquibase update failed" && exit 1)
+          update
 
     # Step 7: Final Confirmation
     - name: Confirm Changes Applied
