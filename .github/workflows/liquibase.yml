@@ -154,4 +154,3 @@ jobs:
     # Step 7: Final Confirmation
     - name: Confirm Changes Applied
       run: echo "Production database changes applied successfully!"
-
