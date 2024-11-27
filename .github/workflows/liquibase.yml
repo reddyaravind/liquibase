@@ -127,7 +127,6 @@ jobs:
           --url="${{ env.STAGING_DB_URL }}" \
           --username="${{ env.STAGING_DB_USERNAME }}" \
           --password="${{ env.STAGING_DB_PASSWORD }}" \
-          --driver=org.postgresql.Driver \
           --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
           generateChangelog
 
