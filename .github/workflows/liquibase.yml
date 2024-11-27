@@ -105,11 +105,11 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Step 2: Ensure Changelog Directory Exists
-    - name: Ensure Changelog Directory Exists
+    # Step 2: Create the changelog directory
+    - name: Create Changelog Directory
       run: mkdir -p ${{ github.workspace }}/changelog
 
-    # Step 3: Generate Diff ChangeLog
+    # Step 3: Run diffChangeLog
     - name: Generate Diff ChangeLog
       run: |
         docker run --rm \
@@ -124,25 +124,23 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
-    # # Step 4: Verify Changelog File
-    # - name: Verify Changelog
-    #   run: |
-    #     echo "Checking changelog file:"
-    #     cat ${{ github.workspace }}/changelog/changelog_diff.xml
-
-    # Step 5: Commit Changelog to Repository
-    - name: Commit Changelog
+    # Step 4: Debug and check generated changelog
+    - name: Verify Changelog Generation
       run: |
-        git config --global user.name "reddyaravind"
-        git config --global user.email "reddyaravind838@gmail.com"
-        cd ${{ github.workspace }}
-        git add changelog/changelog_diff.xml
-        git commit -m "Updated changelog_diff.xml"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        echo "Checking changelog on host system:"
+        ls -l ${{ github.workspace }}/changelog
+        if [ -f "${{ github.workspace }}/changelog/changelog_diff.xml" ]; then
+          echo "Changelog file exists and is ready for use."
+        else
+          echo "Changelog file was not generated. Debugging container..."
+          docker run --rm \
+            -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+            liquibase/liquibase \
+            ls -l /liquibase/changelog
+          exit 1
+        fi
 
-    # Step 6: Use the Committed Changelog for Update
+    # Step 5: Apply changes to production
     - name: Apply Changes to Production
       run: |
         docker run --rm \
@@ -154,6 +152,3 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           update
 
-    # Step 7: Confirm Changes
-    - name: Confirm Changes Applied
-      run: echo "Production database changes applied successfully!"
