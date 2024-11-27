@@ -105,7 +105,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Step 2: Create the changelog directory (optional safeguard)
+    # Step 2: Create the changelog directory
     - name: Ensure Changelog Directory Exists
       run: mkdir -p ${{ github.workspace }}/changelog
 
@@ -124,13 +124,20 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
-    # Step 4: Debugging Step (Verify the generated changelog file)
-    - name: Verify Changelog File
-      run: ls -l ${{ github.workspace }}/changelog && cat ${{ github.workspace }}/changelog/changelog_diff.xml
+    # Step 4: Debugging Step (Verify the changelog file exists on the host)
+    - name: Verify Changelog on Host
+      run: |
+        echo "Checking changelog on host system:"
+        ls -l ${{ github.workspace }}/changelog
+        cat ${{ github.workspace }}/changelog/changelog_diff.xml
 
-    # Step 5: Save the changelog file path in an environment variable
-    - name: Save Changelog Path
-      run: echo "changelog_path=${{ github.workspace }}/changelog/changelog_diff.xml" >> $GITHUB_ENV
+    # Step 5: Verify changelog path inside the container (additional debug)
+    - name: Debug Path Inside Container
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          liquibase/liquibase \
+          ls -l /liquibase/changelog
 
     # Step 6: Apply changes to the production database
     - name: Apply Changes to Production
@@ -144,7 +151,6 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           update
 
-    # Step 7: Verify production changes
-    - name: Verify Production Changes
-      run: |
-        echo "Production database changes have been applied successfully!"
+    # Step 7: Final Confirmation
+    - name: Confirm Changes Applied
+      run: echo "Production database changes applied successfully!"
