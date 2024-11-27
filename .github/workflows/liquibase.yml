@@ -113,44 +113,35 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Install Liquibase
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y default-jre
-        echo "Downloading Liquibase..."
-        curl -sSL https://download.liquibase.org/liquibase-linux-x64.tar.gz -o liquibase.tar.gz
-
-        echo "Verifying tarball..."
-        file liquibase.tar.gz
-
-        echo "Extracting Liquibase..."
-        tar -xzf liquibase.tar.gz -C /usr/local/bin || { echo "Extraction failed"; exit 1; }
-        sudo chmod +x /usr/local/bin/liquibase
-        liquibase --version
-
-    - name: Create Directory for Changelog
-      run: mkdir -p ${{ github.workspace }}/changelog
-
     - name: Generate Changelog from Staging Database
       run: |
-        liquibase \
+        # Create a directory for the changelog file
+        mkdir -p ${{ github.workspace }}/changelog
+
+        # Run Liquibase docker image to generate the changelog from the staging database
+        docker run --rm \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          liquibase/liquibase:4.30.0 \
           --url="${{ env.STAGING_DB_URL }}" \
           --username="${{ env.STAGING_DB_USERNAME }}" \
           --password="${{ env.STAGING_DB_PASSWORD }}" \
-          --changeLogFile="${{ github.workspace }}/changelog/${{ env.CHANGELOG_PATH }}" \
+          --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
           generateChangeLog
 
     - name: Verify Changelog File
       run: |
-        echo "Verifying changelog file:"
+        # Verify the changelog file was generated correctly
         ls -l ${{ github.workspace }}/changelog/
         cat ${{ github.workspace }}/changelog/${{ env.CHANGELOG_PATH }}
 
     - name: Apply Changes to Production Database
       run: |
-        liquibase \
+        # Use the generated changelog to apply changes to the production database
+        docker run --rm \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          liquibase/liquibase:4.30.0 \
           --url="${{ env.PRODUCTION_DB_URL }}" \
           --username="${{ env.PRODUCTION_DB_USERNAME }}" \
           --password="${{ env.PRODUCTION_DB_PASSWORD }}" \
-          --changeLogFile="${{ github.workspace }}/changelog/${{ env.CHANGELOG_PATH }}" \
+          --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
           update
