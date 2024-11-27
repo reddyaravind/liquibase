@@ -124,11 +124,11 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
-    # Step 4: Verify Changelog File
-    - name: Verify Changelog
-      run: |
-        echo "Checking changelog file:"
-        cat ${{ github.workspace }}/changelog/changelog_diff.xml
+    # # Step 4: Verify Changelog File
+    # - name: Verify Changelog
+    #   run: |
+    #     echo "Checking changelog file:"
+    #     cat ${{ github.workspace }}/changelog/changelog_diff.xml
 
     # Step 5: Commit Changelog to Repository
     - name: Commit Changelog
