@@ -122,18 +122,13 @@ jobs:
           --referenceUsername="postgres" \
           --referencePassword="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-          diffChangeLog || (echo "Liquibase command failed" && exit 1)
+          diffChangeLog
 
-    # Step 4: Debugging Step (Verify the changelog file exists on the host)
-    - name: Verify Changelog on Host
+    # Step 4: Cat the changelog file after generation
+    - name: Cat Changelog File After Generation
       run: |
-        echo "Checking changelog on host system:"
-        ls -l ${{ github.workspace }}/changelog || (echo "Changelog directory on host is empty" && exit 1)
-        if [ -f "${{ github.workspace }}/changelog/changelog_diff.xml" ]; then
-          cat ${{ github.workspace }}/changelog/changelog_diff.xml
-        else
-          echo "Changelog file not found in host directory"
-        fi
+        echo "Changelog file generated:"
+        cat ${{ github.workspace }}/changelog/changelog_diff.xml
 
     # Step 5: Verify changelog path inside the container (additional debug)
     - name: Debug Path Inside Container
@@ -141,7 +136,7 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          ls -l /liquibase/changelog || (echo "Unable to list contents of /liquibase/changelog" && exit 1)
+          ls -l /liquibase/changelog
 
     # Step 6: Apply changes to the production database
     - name: Apply Changes to Production
