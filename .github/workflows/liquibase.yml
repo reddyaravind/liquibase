@@ -143,5 +143,5 @@ jobs:
           --url="${{ env.PRODUCTION_DB_URL }}" \
           --username="${{ env.PRODUCTION_DB_USERNAME }}" \
           --password="${{ env.PRODUCTION_DB_PASSWORD }}" \
-          --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
-          update
+          --changeLogFile="file:/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
+          generateChangeLog
