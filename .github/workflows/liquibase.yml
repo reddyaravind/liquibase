@@ -115,10 +115,11 @@ jobs:
 
     - name: Install Liquibase
       run: |
-        LIQUIBASE_VERSION=4.30.0
-        curl -sSL https://github.com/liquibase/liquibase/releases/download/v${LIQUIBASE_VERSION}/liquibase-${LIQUIBASE_VERSION}.tar.gz -o liquibase.tar.gz
-        tar -xzf liquibase.tar.gz
-        sudo mv liquibase /usr/local/bin/liquibase
+        sudo apt-get update
+        sudo apt-get install -y default-jre
+        curl -sSL https://download.liquibase.org/liquibase-linux-x64.tar.gz -o liquibase.tar.gz
+        sudo tar -xzf liquibase.tar.gz -C /usr/local/bin
+        sudo chmod +x /usr/local/bin/liquibase
         liquibase --version
 
     - name: Create Directory for Changelog
