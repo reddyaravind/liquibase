@@ -96,53 +96,77 @@ name: Liquibase CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Trigger the pipeline on push to the main branch
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  generate-and-apply-changes:
+  liquibase:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Set environment variables (replace with actual values)
-    - name: Set environment variables
+    - name: Set up Java 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: 17
+
+    - name: Set environment variables for Liquibase
       run: |
-        echo "STAGING_DB_URL=postgresql://postgres:ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH@autorack.proxy.rlwy.net:58854/railway" >> $GITHUB_ENV
+        echo "STAGING_DB_URL=jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway" >> $GITHUB_ENV
         echo "STAGING_DB_USERNAME=postgres" >> $GITHUB_ENV
         echo "STAGING_DB_PASSWORD=ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH" >> $GITHUB_ENV
-        echo "PRODUCTION_DB_URL=postgresql://postgres:oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc@junction.proxy.rlwy.net:59848/railway" >> $GITHUB_ENV
+        echo "PRODUCTION_DB_URL=jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" >> $GITHUB_ENV
         echo "PRODUCTION_DB_USERNAME=postgres" >> $GITHUB_ENV
         echo "PRODUCTION_DB_PASSWORD=oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" >> $GITHUB_ENV
         echo "CHANGELOG_PATH=changelog_diff.xml" >> $GITHUB_ENV
+        echo "CHANGELOG_DIR=./changelog" >> $GITHUB_ENV
 
-    # Step 1: Generate the changelog file from the staging database
-    - name: Generate Changelog from Staging Database
+    - name: Create changelog directory
+      run: |
+        mkdir -p ${{ env.CHANGELOG_DIR }}
+
+    - name: Generate Changelog from Staging DB
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          -v ${{ github.workspace }}/${{ env.CHANGELOG_DIR }}:/liquibase/changelog \
           liquibase/liquibase:4.30.0 \
-          --url="${{ env.STAGING_DB_URL }}" \
-          --username="${{ env.STAGING_DB_USERNAME }}" \
-          --password="${{ env.STAGING_DB_PASSWORD }}" \
-          --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
-          generateChangelog
+          --url=${{ env.STAGING_DB_URL }} \
+          --username=${{ env.STAGING_DB_USERNAME }} \
+          --password=${{ env.STAGING_DB_PASSWORD }} \
+          --changeLogFile=/liquibase/changelog/${{ env.CHANGELOG_PATH }} \
+          generateChangeLog
 
-    # Step 2: Apply the generated changelog to the production database
-    - name: Apply Changes to Production Database
+    - name: Check if Changelog file exists
       run: |
-        # Ensure the changelog file exists in the correct location inside the Docker container
-        echo "Checking changelog file location inside the container"
-        ls -alh ${{ github.workspace }}/changelog
+        if [ ! -f ${{ github.workspace }}/${{ env.CHANGELOG_DIR }}/${{ env.CHANGELOG_PATH }} ]; then
+          echo "Changelog file does not exist. Exiting."
+          exit 1
+        fi
 
-        # Apply changes using the generated changelog file
+    - name: Apply Changelog to Production DB
+      run: |
         docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          -v ${{ github.workspace }}/${{ env.CHANGELOG_DIR }}:/liquibase/changelog \
           liquibase/liquibase:4.30.0 \
-          --url="${{ env.PRODUCTION_DB_URL }}" \
-          --username="${{ env.PRODUCTION_DB_USERNAME }}" \
-          --password="${{ env.PRODUCTION_DB_PASSWORD }}" \
-          --changeLogFile="file:/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
+          --url=${{ env.PRODUCTION_DB_URL }} \
+          --username=${{ env.PRODUCTION_DB_USERNAME }} \
+          --password=${{ env.PRODUCTION_DB_PASSWORD }} \
+          --changeLogFile=/liquibase/changelog/${{ env.CHANGELOG_PATH }} \
           update
+
+    - name: Send Success Notification
+      run: |
+        echo "Liquibase changes applied successfully to production database."
+        # Add a step here to send a notification (e.g., email, Slack)
+        # Example: curl -X POST -H 'Content-type: application/json' --data '{"text":"Liquibase changes applied successfully."}' https://hooks.slack.com/services/...
+        
+    - name: Handle Failure Notification
+      if: failure()
+      run: |
+        echo "Liquibase process failed."
+        # Send failure notification
+        # Example: curl -X POST -H 'Content-type: application/json' --data '{"text":"Liquibase process failed."}' https://hooks.slack.com/services/...
