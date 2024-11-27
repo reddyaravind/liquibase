@@ -91,37 +91,55 @@
 
 
 
-name: Liquibase Direct Schema Sync
+name: Liquibase Staging to Production Sync
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 env:
-  STAGING_DB_URL: "jdbc:postgresql://staging.proxy.rlwy.net:59848/staging_db"
-  STAGING_DB_USERNAME: "staging_user"
-  STAGING_DB_PASSWORD: "staging_password"
+  STAGING_DB_URL: "jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway"
+  STAGING_DB_USERNAME: "postgres"
+  STAGING_DB_PASSWORD: "ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH"
   PRODUCTION_DB_URL: "jdbc:postgresql://junction.proxy.rlwy.net:59848/railway"
   PRODUCTION_DB_USERNAME: "postgres"
   PRODUCTION_DB_PASSWORD: "oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc"
+  CHANGELOG_PATH: "changelog/changelog_diff.xml"
 
 jobs:
-  direct-schema-sync:
+  sync-staging-to-production:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Compare and Apply Changes from Staging to Production
+    - name: Create Directory for Changelog
+      run: mkdir -p ${{ github.workspace }}/changelog
+
+    - name: Generate Changelog from Staging Database
       run: |
-        docker run --rm liquibase/liquibase \
+        docker run --rm \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          liquibase/liquibase \
+          --url="${{ env.STAGING_DB_URL }}" \
+          --username="${{ env.STAGING_DB_USERNAME }}" \
+          --password="${{ env.STAGING_DB_PASSWORD }}" \
+          --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
+          generateChangeLog
+
+    - name: Verify Changelog File
+      run: |
+        echo "Verifying changelog file:"
+        ls -l ${{ github.workspace }}/changelog/
+        cat ${{ github.workspace }}/changelog/${{ env.CHANGELOG_PATH }}
+
+    - name: Apply Changes to Production Database
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          liquibase/liquibase \
           --url="${{ env.PRODUCTION_DB_URL }}" \
           --username="${{ env.PRODUCTION_DB_USERNAME }}" \
           --password="${{ env.PRODUCTION_DB_PASSWORD }}" \
-          --referenceUrl="${{ env.STAGING_DB_URL }}" \
-          --referenceUsername="${{ env.STAGING_DB_USERNAME }}" \
-          --referencePassword="${{ env.STAGING_DB_PASSWORD }}" \
-          diff \
+          --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
           update
