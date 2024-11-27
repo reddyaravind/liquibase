@@ -117,8 +117,14 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y default-jre
+        echo "Downloading Liquibase..."
         curl -sSL https://download.liquibase.org/liquibase-linux-x64.tar.gz -o liquibase.tar.gz
-        sudo tar -xzf liquibase.tar.gz -C /usr/local/bin
+
+        echo "Verifying tarball..."
+        file liquibase.tar.gz
+
+        echo "Extracting Liquibase..."
+        tar -xzf liquibase.tar.gz -C /usr/local/bin || { echo "Extraction failed"; exit 1; }
         sudo chmod +x /usr/local/bin/liquibase
         liquibase --version
 
