@@ -91,7 +91,7 @@
 
 
 
-name: Liquibase Schema Migration
+name: Liquibase Direct Schema Sync
 
 on:
   push:
@@ -105,43 +105,23 @@ env:
   PRODUCTION_DB_URL: "jdbc:postgresql://junction.proxy.rlwy.net:59848/railway"
   PRODUCTION_DB_USERNAME: "postgres"
   PRODUCTION_DB_PASSWORD: "oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc"
-  CHANGELOG_PATH: "${{ github.workspace }}/changelog/changelog_diff.xml"
 
 jobs:
-  migrate-schema:
+  direct-schema-sync:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Create Changelog Directory
-      run: mkdir -p changelog
-
-    - name: Generate Changelog from Staging
+    - name: Compare and Apply Changes from Staging to Production
       run: |
-        docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
-          liquibase/liquibase \
-          --url="${{ env.STAGING_DB_URL }}" \
-          --username="${{ env.STAGING_DB_USERNAME }}" \
-          --password="${{ env.STAGING_DB_PASSWORD }}" \
-          --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-          diffChangelog
-
-    - name: Verify Changelog File
-      run: |
-        echo "Checking changelog file content:"
-        ls -la changelog
-        cat changelog/changelog_diff.xml
-
-    - name: Apply Changelog to Production
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
-          liquibase/liquibase \
+        docker run --rm liquibase/liquibase \
           --url="${{ env.PRODUCTION_DB_URL }}" \
           --username="${{ env.PRODUCTION_DB_USERNAME }}" \
           --password="${{ env.PRODUCTION_DB_PASSWORD }}" \
-          --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
+          --referenceUrl="${{ env.STAGING_DB_URL }}" \
+          --referenceUsername="${{ env.STAGING_DB_USERNAME }}" \
+          --referencePassword="${{ env.STAGING_DB_PASSWORD }}" \
+          diff \
           update
