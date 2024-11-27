@@ -124,10 +124,11 @@ jobs:
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
 
-    # Step 4: Cat the changelog file after generation
-    - name: Cat Changelog File After Generation
+    # Step 4: Verify if the changelog file exists on the host system after generation
+    - name: Verify Changelog on Host
       run: |
-        echo "Changelog file generated:"
+        echo "Checking if the changelog file exists on the host system:"
+        ls -l ${{ github.workspace }}/changelog
         cat ${{ github.workspace }}/changelog/changelog_diff.xml
 
     # Step 5: Verify changelog path inside the container (additional debug)
