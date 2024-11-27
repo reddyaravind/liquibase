@@ -129,7 +129,7 @@ jobs:
           --password="${{ env.STAGING_DB_PASSWORD }}" \
           --driver=org.postgresql.Driver \
           --changeLogFile="/liquibase/changelog/${{ env.CHANGELOG_PATH }}" \
-          diffChangelog
+          generateChangelog
 
     # Step 2: Apply the generated changelog to the production database
     - name: Apply Changes to Production Database
