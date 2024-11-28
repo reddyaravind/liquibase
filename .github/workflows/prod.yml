@@ -39,5 +39,5 @@ jobs:
           --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
           --username="postgres" \
           --password="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
-          --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
+          --changeLogFile="changelog/changelog_diff.xml" \
           update
