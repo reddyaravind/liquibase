@@ -1,0 +1,33 @@
+name: Update Production Database
+
+on:
+  workflow_dispatch: # Allows manual triggering of the pipeline
+
+jobs:
+  update-production-db:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository to access the changelog file
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    # Pull the latest changes from the repository
+    - name: Pull Latest Changes from Repository
+      run: |
+        git pull origin main
+        ls -l ${{ github.workspace }}/changelog
+        cat ${{ github.workspace }}/changelog/changelog_diff.xml
+
+    # Apply changes to the production database using the changelog_diff.xml
+    - name: Apply Changes to Production
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          liquibase/liquibase \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
+          --username="postgres" \
+          --password="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
+          --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
+          update
+        echo "Changes applied successfully to the production database!"
