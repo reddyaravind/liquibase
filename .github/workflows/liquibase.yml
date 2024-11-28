@@ -188,10 +188,10 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway/myemployees" \
+          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
           --referenceUsername="postgres" \
           --referencePassword="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
-          --url="jdbc:postgresql://autorack.proxy.rlwy.net:28199/railway/myemployees" \
+          --url="jdbc:postgresql://autorack.proxy.rlwy.net:28199/railway" \
           --username="postgres" \
           --password="TCxIvnrJRcRbgLfKzwdUtFspdlDnQpvJ" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
@@ -227,7 +227,7 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway/myemployees" \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
           --username="postgres" \
           --password="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
           --changeLogFile="changelog/new_diff.xml" \
@@ -240,7 +240,7 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway/myemployees" \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
           --username="postgres" \
           --password="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
           --changeLogFile="/liquibase/changelog/changelog_prod_generated.xml" \
