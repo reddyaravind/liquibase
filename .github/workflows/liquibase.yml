@@ -143,7 +143,7 @@ jobs:
           --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
           --username="postgres" \
           --password="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
-          --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
+          --changeLogFile="changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           update
         echo "Changes applied successfully to production!"
 
