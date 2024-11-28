@@ -210,7 +210,7 @@ jobs:
       run: |
         git config --global user.name "reddyaravind"
         git config --global user.email "reddyaravind838@gmail.com"
-        git add changelog/changelog_diff.xml
+        git add ${{ github.workspace }}/changelog/changelog_diff.xml
         git commit -m "Save generated changelog_diff.xml"
         git push
       env:
