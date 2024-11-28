@@ -188,12 +188,12 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
+          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
           --referenceUsername="postgres" \
-          --referencePassword="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
-          --url="jdbc:postgresql://autorack.proxy.rlwy.net:58854/railway" \
+          --referencePassword="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
+          --url="jdbc:postgresql://autorack.proxy.rlwy.net:28199/railway" \
           --username="postgres" \
-          --password="ThQNAfKRnLPpeLgJgDAkhQwVcEZfuHmH" \
+          --password="TCxIvnrJRcRbgLfKzwdUtFspdlDnQpvJ" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           diffChangeLog
         ls -l ${{ github.workspace }}/changelog # Check if the file is created
@@ -226,9 +226,9 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
           --username="postgres" \
-          --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
+          --password="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           update
         echo "Changes applied successfully to production!"
@@ -239,9 +239,9 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:59848/railway" \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
           --username="postgres" \
-          --password="oebjeJFqRLeFcIBAziEJQsMKeLhUeRFc" \
+          --password="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
           --changeLogFile="/liquibase/changelog/changelog_prod_generated.xml" \
           generateChangeLog
 
