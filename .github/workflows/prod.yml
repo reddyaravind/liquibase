@@ -8,18 +8,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository to access the changelog file
+    # Checkout the repository
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    # Pull the latest changes from the repository
-    - name: Pull Latest Changes from Repository
+    # Debug: Ensure changelog file exists in the workspace
+    - name: Debug Changelog File
       run: |
-        git pull origin main
+        echo "Current working directory: $(pwd)"
+        echo "Listing all files in workspace:"
+        ls -lR ${{ github.workspace }}
+        echo "Listing files in changelog directory:"
         ls -l ${{ github.workspace }}/changelog
-        cat ${{ github.workspace }}/changelog/changelog_diff.xml
+        cat ${{ github.workspace }}/changelog/changelog_diff.xml || echo "changelog_diff.xml is missing"
 
-    # Apply changes to the production database using the changelog_diff.xml
+    # Debug: Verify Docker volume mount
+    - name: Debug Docker Volume Mount
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          liquibase/liquibase \
+          ls -l /liquibase/changelog
+
+    # Apply changes to the production database
     - name: Apply Changes to Production
       run: |
         docker run --rm \
@@ -30,4 +41,3 @@ jobs:
           --password="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
           --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
           update
-        echo "Changes applied successfully to the production database!"
