@@ -10,4 +10,14 @@
     <changeSet author="liquibase (generated)" id="1732777197605-2">
         <dropTable tableName="staging_table"/>
     </changeSet>
+    <changeSet author="liquibase (generated)" id="1732777443197-1">
+        <createTable tableName="production_table">
+            <column autoIncrement="true" name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="production_table_pkey"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="liquibase (generated)" id="1732777443197-2">
+        <dropTable tableName="staging_table"/>
+    </changeSet>
 </databaseChangeLog>
