@@ -208,10 +208,8 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          # --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:29998/railway" \
           --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:18101/railway" \
           --referenceUsername="postgres" \
-          # --referencePassword="WxRRXUSeJMhbtXNYpEDybvJRRUiLUsRU" \
           --referencePassword="gTTxbNVwdQuBEMLPgcPoUdrenFsZixhu" \
           --url="jdbc:postgresql://junction.proxy.rlwy.net:29998/railway" \
           --username="postgres" \
