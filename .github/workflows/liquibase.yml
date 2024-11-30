@@ -208,12 +208,12 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
+          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:29998/railway" \
           --referenceUsername="postgres" \
-          --referencePassword="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
-          --url="jdbc:postgresql://autorack.proxy.rlwy.net:28199/railway" \
+          --referencePassword="WxRRXUSeJMhbtXNYpEDybvJRRUiLUsRU" \
+          --url="jdbc:postgresql://autorack.proxy.rlwy.net:18101/railway" \
           --username="postgres" \
-          --password="TCxIvnrJRcRbgLfKzwdUtFspdlDnQpvJ" \
+          --password="gTTxbNVwdQuBEMLPgcPoUdrenFsZixhu" \
           --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           diffChangeLog
         ls -l ${{ github.workspace }}/changelog # Check if the file is created
@@ -231,9 +231,9 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:18143/railway" \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:29998/railway" \
           --username="postgres" \
-          --password="mETBgLqbGkxManJuOUtqRbdyZQmpRacV" \
+          --password="WxRRXUSeJMhbtXNYpEDybvJRRUiLUsRU" \
           --changeLogFile="changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           update
         echo "Changes applied successfully to production!"
