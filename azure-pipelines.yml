@@ -3,37 +3,31 @@ trigger:
 
 pr: none # No triggers for pull requests
 
-# pool:
-#   name: Default  # Your agent pool name
-#   demands:
-#     - agent.name -equals DART  # Ensure it uses the DART agent
-
-# jobs:
-# - job: liquibase_cicd
-#   displayName: "Liquibase CI/CD Pipeline"
-#   pool:
-#     vmImage: 'ubuntu-latest'
-
 pool:
   name: Default
   demands:
     - agent.name -equals DART
 
-steps:
-  - script: echo "Hello World"
-    displayName: "Print Hello World"
+jobs:
+- job: liquibase_cicd
+  displayName: "Liquibase CI/CD Pipeline"
+  pool:
+    vmImage: 'ubuntu-latest'
 
 
-  # steps:
-  # # Checkout the repository
-  # - task: Checkout@1
-  #   displayName: "Checkout Repository"
 
-  # # Clean Previous Changelog Directory
-  # - script: |
-  #     mkdir -p $(System.DefaultWorkingDirectory)/changelog
-  #     rm -rf $(System.DefaultWorkingDirectory)/changelog/*
-  #   displayName: "Clean Changelog Directory"
+
+
+  steps:
+  # Checkout the repository
+  - task: Checkout@1
+    displayName: "Checkout Repository"
+
+  # Clean Previous Changelog Directory
+  - script: |
+      mkdir -p $(System.DefaultWorkingDirectory)/changelog
+      rm -rf $(System.DefaultWorkingDirectory)/changelog/*
+    displayName: "Clean Changelog Directory"
 
   # # Generate Diff ChangeLog
   # - script: |
