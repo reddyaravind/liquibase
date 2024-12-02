@@ -22,49 +22,49 @@ jobs:
       rm -rf $(System.DefaultWorkingDirectory)/changelog/*
     displayName: "Clean Changelog Directory"
 
-  # Generate Diff ChangeLog
-  - script: |
-      docker run --rm \
-        -v $(System.DefaultWorkingDirectory)/changelog:/liquibase/changelog \
-        liquibase/liquibase \
-        --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:44168/railway" \
-        --referenceUsername="postgres" \
-        --referencePassword="IqcvulBCcTFeCpuVHAMzHvrkaQrvjcbJ" \
-        --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
-        --username="postgres" \
-        --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
-        --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-        diffChangeLog
-      ls -l $(System.DefaultWorkingDirectory)/changelog
-    displayName: "Run Liquibase to Generate Diff ChangeLog"
+  # # Generate Diff ChangeLog
+  # - script: |
+  #     docker run --rm \
+  #       -v $(System.DefaultWorkingDirectory)/changelog:/liquibase/changelog \
+  #       liquibase/liquibase \
+  #       --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:44168/railway" \
+  #       --referenceUsername="postgres" \
+  #       --referencePassword="IqcvulBCcTFeCpuVHAMzHvrkaQrvjcbJ" \
+  #       --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
+  #       --username="postgres" \
+  #       --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
+  #       --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
+  #       diffChangeLog
+  #     ls -l $(System.DefaultWorkingDirectory)/changelog
+  #   displayName: "Run Liquibase to Generate Diff ChangeLog"
 
-  # Debug: Verify Changelog Directory
-  - script: |
-      echo "Listing files in changelog directory:"
-      ls -l $(System.DefaultWorkingDirectory)/changelog
-      cat $(System.DefaultWorkingDirectory)/changelog/changelog_diff.xml
-    displayName: "Verify Changelog Directory"
+  # # Debug: Verify Changelog Directory
+  # - script: |
+  #     echo "Listing files in changelog directory:"
+  #     ls -l $(System.DefaultWorkingDirectory)/changelog
+  #     cat $(System.DefaultWorkingDirectory)/changelog/changelog_diff.xml
+  #   displayName: "Verify Changelog Directory"
 
-  # Apply changes to production using the generated changelog file
-  - script: |
-      docker run --rm \
-        -v $(System.DefaultWorkingDirectory)/changelog:/liquibase/changelog \
-        liquibase/liquibase \
-        --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
-        --username="postgres" \
-        --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
-        --changeLogFile="changelog/changelog_diff.xml" \
-        update
-      echo "Changes applied successfully to production!"
-    displayName: "Apply Changes to Production"
+  # # Apply changes to production using the generated changelog file
+  # - script: |
+  #     docker run --rm \
+  #       -v $(System.DefaultWorkingDirectory)/changelog:/liquibase/changelog \
+  #       liquibase/liquibase \
+  #       --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
+  #       --username="postgres" \
+  #       --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
+  #       --changeLogFile="changelog/changelog_diff.xml" \
+  #       update
+  #     echo "Changes applied successfully to production!"
+  #   displayName: "Apply Changes to Production"
 
-  # Push the changelog file to GitHub
-  - script: |
-      git config --global user.name "reddyaravind"
-      git config --global user.email "reddyaravind838@gmail.com"
-      git add $(System.DefaultWorkingDirectory)/changelog/changelog_diff_$(TIMESTAMP).xml
-      git commit -m "Save generated changelog_diff_$(TIMESTAMP).xml"
-      git push
-    displayName: "Push Changelog to GitHub"
-    env:
-      GITHUB_TOKEN: $(GITHUB_TOKEN) # Define the GitHub token as a pipeline secret
+  # # Push the changelog file to GitHub
+  # - script: |
+  #     git config --global user.name "reddyaravind"
+  #     git config --global user.email "reddyaravind838@gmail.com"
+  #     git add $(System.DefaultWorkingDirectory)/changelog/changelog_diff_$(TIMESTAMP).xml
+  #     git commit -m "Save generated changelog_diff_$(TIMESTAMP).xml"
+  #     git push
+  #   displayName: "Push Changelog to GitHub"
+  #   env:
+  #     GITHUB_TOKEN: $(GITHUB_TOKEN) # Define the GitHub token as a pipeline secret
