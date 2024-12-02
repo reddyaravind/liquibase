@@ -3,18 +3,26 @@ trigger:
 
 pr: none # No triggers for pull requests
 
+# pool:
+#   name: Default  # Your agent pool name
+#   demands:
+#     - agent.name -equals DART  # Ensure it uses the DART agent
+
+# jobs:
+# - job: liquibase_cicd
+#   displayName: "Liquibase CI/CD Pipeline"
+#   pool:
+#     vmImage: 'ubuntu-latest'
+
 pool:
-  name: Default  # Your agent pool name
+  name: Default
   demands:
-    - agent.name -equals DART  # Ensure it uses the DART agent
+    - agent.name -equals DART
 
-jobs:
-- job: liquibase_cicd
-  displayName: "Liquibase CI/CD Pipeline"
-  pool:
-    vmImage: 'ubuntu-latest'
+steps:
+  - script: echo "Hello World"
+    displayName: "Print Hello World"
 
-  
 
   # steps:
   # # Checkout the repository
