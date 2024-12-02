@@ -23,13 +23,13 @@ jobs:
       printenv
     displayName: "List Environment Variables"
 
-  # # Checkout the repository
-  # - task: Checkout@1
-  #   displayName: "Checkout Repository"
-  # - script: |
-  #     echo "Current working directory:"
-  #     echo "$(Build.SourcesDirectory)"
-    # displayName: Print Working Directory
+  # Checkout the repository
+  - task: Checkout@1
+    displayName: "Checkout Repository"
+  - script: |
+      echo "Current working directory:"
+      echo "$(System.DefaultWorkingDirectory)"
+    displayName: Print Working Directory
   # # Clean Previous Changelog Directory
   # - script: |
   #     mkdir -p $(System.DefaultWorkingDirectory)/changelog
