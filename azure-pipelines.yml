@@ -11,8 +11,7 @@ pool:
 jobs:
 - job: liquibase_cicd
   displayName: "Liquibase CI/CD Pipeline"
-  pool:
-    vmImage: 'ubuntu-latest'
+ 
 
 
 
