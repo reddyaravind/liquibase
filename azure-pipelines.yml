@@ -28,7 +28,7 @@ jobs:
     displayName: "Checkout Repository"
   - script: |
       echo "Current working directory:"
-      echo "SYSTEM_DEFAULTWORKINGDIRECTORY is: $(System)"
+      echo "SYSTEM_DEFAULTWORKINGDIRECTORY is: $(SYSTEM_DEFAULTWORKINGDIRECTORY)"
     displayName: Print Working Directory
   # # Clean Previous Changelog Directory
   # - script: |
