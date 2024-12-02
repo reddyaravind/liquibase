@@ -34,7 +34,7 @@ jobs:
         --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
         --username="postgres" \
         --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
-        --changeLogFile="/liquibase/changelog/changelog_diff_$(TIMESTAMP).xml" \
+        --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
         diffChangeLog
       ls -l $(System.DefaultWorkingDirectory)/changelog
     displayName: "Run Liquibase to Generate Diff ChangeLog"
@@ -43,7 +43,7 @@ jobs:
   - script: |
       echo "Listing files in changelog directory:"
       ls -l $(System.DefaultWorkingDirectory)/changelog
-      cat $(System.DefaultWorkingDirectory)/changelog/changelog_diff_$(TIMESTAMP).xml
+      cat $(System.DefaultWorkingDirectory)/changelog/changelog_diff.xml
     displayName: "Verify Changelog Directory"
 
   # Apply changes to production using the generated changelog file
@@ -54,7 +54,7 @@ jobs:
         --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
         --username="postgres" \
         --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
-        --changeLogFile="changelog/changelog_diff_$(TIMESTAMP).xml" \
+        --changeLogFile="changelog/changelog_diff.xml" \
         update
       echo "Changes applied successfully to production!"
     displayName: "Apply Changes to Production"
