@@ -22,12 +22,15 @@ jobs:
   # Checkout the repository
   - task: Checkout@1
     displayName: "Checkout Repository"
-
-  # Clean Previous Changelog Directory
   - script: |
-      mkdir -p $(System.DefaultWorkingDirectory)/changelog
-      rm -rf $(System.DefaultWorkingDirectory)/changelog/*
-    displayName: "Clean Changelog Directory"
+      echo "Current working directory:"
+      echo "$(System.DefaultWorkingDirectory)"
+    displayName: Print Working Directory
+  # # Clean Previous Changelog Directory
+  # - script: |
+  #     mkdir -p $(System.DefaultWorkingDirectory)/changelog
+  #     rm -rf $(System.DefaultWorkingDirectory)/changelog/*
+  #   displayName: "Clean Changelog Directory"
 
   # # Generate Diff ChangeLog
   # - script: |
