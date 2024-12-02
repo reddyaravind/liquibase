@@ -11,10 +11,10 @@ jobs:
 
   
 
-  steps:
-  # Checkout the repository
-  - task: Checkout@1
-    displayName: "Checkout Repository"
+  # steps:
+  # # Checkout the repository
+  # - task: Checkout@1
+  #   displayName: "Checkout Repository"
 
   # # Clean Previous Changelog Directory
   # - script: |
