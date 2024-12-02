@@ -9,8 +9,7 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
 
-  variables:
-    TIMESTAMP: $[format('{0:yyyyMMddHHmmss}', pipeline.startTime)] # Generates a timestamp using pipeline start time
+  
 
   steps:
   # Checkout the repository
