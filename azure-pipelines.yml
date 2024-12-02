@@ -18,14 +18,19 @@ jobs:
 
 
 
+
   steps:
-  # Checkout the repository
-  - task: Checkout@1
-    displayName: "Checkout Repository"
   - script: |
-      echo "Current working directory:"
-      echo "$(Build.SourcesDirectory)"
-    displayName: Print Working Directory
+      printenv
+    displayName: "List Environment Variables"
+
+  # # Checkout the repository
+  # - task: Checkout@1
+  #   displayName: "Checkout Repository"
+  # - script: |
+  #     echo "Current working directory:"
+  #     echo "$(Build.SourcesDirectory)"
+    # displayName: Print Working Directory
   # # Clean Previous Changelog Directory
   # - script: |
   #     mkdir -p $(System.DefaultWorkingDirectory)/changelog
