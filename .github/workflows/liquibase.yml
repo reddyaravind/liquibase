@@ -37,7 +37,7 @@ jobs:
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
           --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           diffChangeLog
-        ls -l ${{ github.workspace }}/changelog # Check if the file is created
+        ls -l ${{ github.workspace }}/changelog 
 
     # Debug: Verify Changelog Directory
     - name: Verify Changelog Directory
