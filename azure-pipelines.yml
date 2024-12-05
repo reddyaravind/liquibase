@@ -69,8 +69,8 @@ pool:
 
 variables:
   liquibaseImage: liquibase/liquibase:4.30
-  changelogDir: $(Build.Repository.LocalPath)/changelog
-  timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
+  changelogDir: $(Build.SourcesDirectory)/changelog
+  # timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
 
 jobs:
   - job: Liquibase
