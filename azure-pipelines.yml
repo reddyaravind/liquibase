@@ -1,71 +1,100 @@
+# trigger:
+#   branches:
+#     include:
+#       - main  # Define your branch trigger (you can specify any branch)
+
+
+# pool:
+#   name: Default  # Your agent pool name
+#   demands:
+#     - agent.name -equals DART  # Ensure it uses the DART agent
+# jobs:
+#   - job: Liquibase
+#     displayName: 'Run Liquibase Changes'
+#     pool:
+#       vmImage: 'ubuntu-latest'
+
+#     steps:
+#       - task: Checkout@1
+#         displayName: 'Checkout repository'
+        
+#       - script: |
+#           echo "Setting up Liquibase..."
+#           mkdir -p $(changelogDir)
+#         displayName: 'Setup changelog directory'
+
+#       # Step 1: Generate Liquibase Changelog Diff (between two databases)
+#       - script: |
+#           echo "Running Liquibase to generate Diff Changelog..."
+#           docker run --rm \
+#             -v $(changelogDir):/liquibase/changelog \
+#             $(liquibaseImage) \
+#             --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
+#             --referenceUsername="postgres" \
+#             --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
+#             --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+#             --username="postgres" \
+#             --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
+#             --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
+#             diffChangeLog
+#         displayName: 'Generate Diff Changelog'
+
+#       # Step 2: List changelog files to check if it's created
+#       - script: |
+#           echo "Listing files in changelog directory:"
+#           ls -l $(changelogDir)
+#         displayName: 'List changelog directory'
+
+#       # Step 3: Apply the changelog to the target database
+#       - script: |
+#           echo "Applying changelog to the target database..."
+#           docker run --rm \
+#             -v $(changelogDir):/liquibase/changelog \
+#             $(liquibaseImage) \
+#             --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+#             --username="postgres" \
+#             --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
+#             --changeLogFile="/liquibase/changelog/changelog_diff).xml" \
+#             update
+#         displayName: 'Apply Changelog to Database'
+
+     
 trigger:
   branches:
     include:
-      - main  # Define your branch trigger (you can specify any branch)
-
+      - main
 
 pool:
   name: Default  # Your agent pool name
   demands:
     - agent.name -equals DART  # Ensure it uses the DART agent
+
+parameters:
+  - name: branchName
+    type: string
+    default: 'main'
+  - name: imageTag
+    type: string
+    default: 'latest'
+
 jobs:
-  - job: Liquibase
-    displayName: 'Run Liquibase Changes'
-    pool:
-      vmImage: 'ubuntu-latest'
+- job: BuildAndPushDockerImage
+  displayName: 'Build and Push Docker Image'
+  pool: 
+    name: Default  # Replace with the pool containing your DART agent
 
-    steps:
-      - task: Checkout@1
-        displayName: 'Checkout repository'
-        
-      - script: |
-          echo "Setting up Liquibase..."
-          mkdir -p $(changelogDir)
-        displayName: 'Setup changelog directory'
-
-      # # Step 1: Generate Liquibase Changelog Diff (between two databases)
-      # - script: |
-      #     echo "Running Liquibase to generate Diff Changelog..."
-      #     docker run --rm \
-      #       -v $(changelogDir):/liquibase/changelog \
-      #       $(liquibaseImage) \
-      #       --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
-      #       --referenceUsername="postgres" \
-      #       --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
-      #       --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
-      #       --username="postgres" \
-      #       --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-      #       --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-      #       diffChangeLog
-      #   displayName: 'Generate Diff Changelog'
-
-      # # Step 2: List changelog files to check if it's created
-      # - script: |
-      #     echo "Listing files in changelog directory:"
-      #     ls -l $(changelogDir)
-      #   displayName: 'List changelog directory'
-
-      # # Step 3: Apply the changelog to the target database
-      # - script: |
-      #     echo "Applying changelog to the target database..."
-      #     docker run --rm \
-      #       -v $(changelogDir):/liquibase/changelog \
-      #       $(liquibaseImage) \
-      #       --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
-      #       --username="postgres" \
-      #       --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-      #       --changeLogFile="/liquibase/changelog/changelog_diff).xml" \
-      #       update
-      #   displayName: 'Apply Changelog to Database'
-
-      # # Step 4: Optional: Push the generated changelog to GitHub (if desired)
-      # - task: GitHubActions@1
-      #   displayName: 'Push Changelog to GitHub'
-      #   inputs:
-      #     repository: 'https://github.com/<username>/<repository>.git'
-      #     branch: 'main'
-      #     commitMessage: 'Save generated changelog'
-      #     files: 'changelog/changelog_diff_$(timestamp).xml'
-      #   env:
-      #     GITHUB_TOKEN: $(GITHUB_TOKEN)  # You need to set this secret in your Azure Pipeline
-
+  steps:
+    - checkout: self
+    - task: Docker@2
+      displayName: 'Login to Docker Hub'
+      inputs:
+        containerRegistry: 'mydockerhub'  # Service connection name
+        command: 'login'
+    - task: Docker@2
+      displayName: 'Build and Push Docker Image'
+      inputs:
+        containerRegistry: 'mydockerhub'
+        repository: 'reddyaravind/gitpractice'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: ${{ parameters.imageTag }}
