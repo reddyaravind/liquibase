@@ -20,8 +20,8 @@ jobs:
     # Clean Previous Changelog Directory
     - name: Clean Changelog Directory
       run: |
-        mkdir -p $GITHUB_WORKSPACE/changelog
-        rm -rf $GITHUB_WORKSPACE/changelog/*
+        mkdir -p ${{ github.workspace }}/changelog
+        rm -rf ${{ github.workspace }}/changelog/*
 
     # Generate Diff ChangeLog
     - name: Run Liquibase to Generate Diff ChangeLog
@@ -42,8 +42,8 @@ jobs:
     - name: Verify Changelog Directory
       run: |
         echo "Listing files in changelog directory:"
-        ls -l $GITHUB_WORKSPACE/changelog
-        cat $GITHUB_WORKSPACE/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml
+        ls -l ${{ github.workspace }}/changelog
+        cat ${{ github.workspace }}/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml
 
     # Apply changes to production using the generated changelog file
     - name: Apply Changes to Production
