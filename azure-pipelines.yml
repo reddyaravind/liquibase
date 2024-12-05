@@ -132,6 +132,7 @@ jobs:
       echo "Repository Name: $(Build.Repository.Name)"
       echo "Agent Name: $(Agent.Name)"
       echo "Working Directory: $(System.DefaultWorkingDirectory)"
+      echi "Source dIRECTORY: $(Build.SourcesDirectory)"
     displayName: 'Print predefined variables'
 
   - script: |
