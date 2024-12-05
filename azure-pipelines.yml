@@ -136,30 +136,30 @@ jobs:
       - task: Checkout@1
         displayName: 'Checkout repository'
         
-      # Step 1: Setup changelog directory
-      - script: |
-          echo "Setting up Liquibase..."
-          # mkdir -p $(Build.SourcesDirectory)/changelog
-        displayName: 'Setup changelog directory'
+      # # Step 1: Setup changelog directory
+      # - script: |
+      #     echo "Setting up Liquibase..."
+      #     # mkdir -p $(Build.SourcesDirectory)/changelog
+      #   displayName: 'Setup changelog directory'
 
-      # Step 2: Generate Diff Changelog
-      - script: |
-          echo "Running Liquibase to generate Diff Changelog..."
-          docker run --rm \
-            -v $(changelogDir):/liquibase/changelog \
-            liquibase/liquibase:4.30 \
-            --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
-            --referenceUsername="postgres" \
-            --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
-            --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
-            --username="postgres" \
-            --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-            --changeLogFile="/liquibase/changelog/changelog.xml" \
-            diffChangeLog
-        displayName: 'Generate Diff Changelog'
+      # # Step 2: Generate Diff Changelog
+      # - script: |
+      #     echo "Running Liquibase to generate Diff Changelog..."
+      #     docker run --rm \
+      #       -v $(changelogDir):/liquibase/changelog \
+      #       liquibase/liquibase:4.30 \
+      #       --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
+      #       --referenceUsername="postgres" \
+      #       --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
+      #       --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+      #       --username="postgres" \
+      #       --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
+      #       --changeLogFile="/liquibase/changelog/changelog.xml" \
+      #       diffChangeLog
+      #   displayName: 'Generate Diff Changelog'
 
-      # Step 3: List files in changelog directory
-      - script: |
-          echo "Listing files in changelog directory:"
-          # ls -l $(Build.SourcesDirectory)/changelog
-        displayName: 'List changelog directory'
+      # # Step 3: List files in changelog directory
+      # - script: |
+      #     echo "Listing files in changelog directory:"
+      #     # ls -l $(Build.SourcesDirectory)/changelog
+      #   displayName: 'List changelog directory'
