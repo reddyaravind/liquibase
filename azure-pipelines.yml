@@ -122,6 +122,7 @@ pool:
     - agent.name -equals DART  # Ensure it uses the DART agent
 
 variables:
+  system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
   timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
