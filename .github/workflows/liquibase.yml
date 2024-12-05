@@ -30,12 +30,13 @@ jobs:
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           alpine sh -c "ls -l /liquibase/changelog"
 
-    # Generate Diff ChangeLog
+    # Generate Diff ChangeLog with Debugging
     - name: Run Liquibase to Generate Diff ChangeLog
       run: |
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
+          --logLevel=debug \
           --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
           --referenceUsername="postgres" \
           --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
