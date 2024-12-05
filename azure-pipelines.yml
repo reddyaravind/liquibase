@@ -59,54 +59,79 @@
 #         displayName: 'Apply Changelog to Database'
 
      
+# trigger:
+#   branches:
+#     include:
+#       - main
+
+# pool:
+#   name: Default
+
+# variables:
+#   liquibaseImage: liquibase/liquibase:4.30
+#   # changelogDir: $(Build.SourcesDirectory)/changelog
+#   # timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
+
+# jobs:
+#   - job: Liquibase
+#     displayName: 'Run Liquibase Changes'
+#     pool:
+#       vmImage: 'ubuntu-latest'
+
+#     steps:
+#       - task: Checkout@1
+#         displayName: 'Checkout repository'
+        
+#       # Step 1: Setup changelog directory
+#       - script: |
+#           echo "Setting up Liquibase..."
+#           # mkdir -p $(changelogDir)
+#         displayName: 'Setup changelog directory'
+
+#       # Step 2: Generate Diff Changelog
+#       - script: |
+#           echo "Running Liquibase to generate Diff Changelog..."
+#           docker run --rm \
+#             -v $(changelogDir):/liquibase/changelog \
+#             $(liquibaseImage) \
+#             --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
+#             --referenceUsername="postgres" \
+#             --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
+#             --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+#             --username="postgres" \
+#             --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
+#             --changeLogFile="/liquibase/changelog/changelog.xml" \
+#             diffChangeLog
+#         displayName: 'Generate Diff Changelog'
+
+#       # Step 3: List files in changelog directory
+#       - script: |
+#           echo "Listing files in changelog directory:"
+#           # ls -l $(changelogDir)
+#         displayName: 'List changelog directory'
+
+
 trigger:
   branches:
     include:
       - main
 
 pool:
-  name: Default
-
-variables:
-  liquibaseImage: liquibase/liquibase:4.30
-  # changelogDir: $(Build.SourcesDirectory)/changelog
-  # timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
+  vmImage: 'ubuntu-latest'
 
 jobs:
-  - job: Liquibase
-    displayName: 'Run Liquibase Changes'
-    pool:
-      vmImage: 'ubuntu-latest'
+- job: ExampleJob
+  displayName: 'Example job to use predefined variables'
 
-    steps:
-      - task: Checkout@1
-        displayName: 'Checkout repository'
-        
-      # Step 1: Setup changelog directory
-      - script: |
-          echo "Setting up Liquibase..."
-          # mkdir -p $(changelogDir)
-        displayName: 'Setup changelog directory'
+  steps:
+  - script: |
+      echo "Pipeline ID: $(Build.BuildId)"
+      echo "Source Branch: $(Build.SourceBranch)"
+      echo "Repository Name: $(Build.Repository.Name)"
+      echo "Agent Name: $(Agent.Name)"
+      echo "Working Directory: $(System.DefaultWorkingDirectory)"
+    displayName: 'Print predefined variables'
 
-      # Step 2: Generate Diff Changelog
-      - script: |
-          echo "Running Liquibase to generate Diff Changelog..."
-          docker run --rm \
-            -v $(changelogDir):/liquibase/changelog \
-            $(liquibaseImage) \
-            --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
-            --referenceUsername="postgres" \
-            --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
-            --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
-            --username="postgres" \
-            --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-            --changeLogFile="/liquibase/changelog/changelog.xml" \
-            diffChangeLog
-        displayName: 'Generate Diff Changelog'
-
-      # Step 3: List files in changelog directory
-      - script: |
-          echo "Listing files in changelog directory:"
-          # ls -l $(changelogDir)
-        displayName: 'List changelog directory'
-
+  - script: |
+      echo "Current branch is $(Build.SourceBranch)" > $(System.DefaultWorkingDirectory)/branch_info.txt
+    displayName: 'Create a file with branch information'
