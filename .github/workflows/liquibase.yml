@@ -205,21 +205,21 @@ jobs:
         ls -l ${{ github.workspace }}/changelog
         cat ${{ github.workspace }}/changelog/changelog_diff.xml
 
-    # Push the changelog file to GitHub
-    - name: Push Changelog to GitHub
-      run: |
-        git config --global user.name "reddyaravind"
-        git config --global user.email "reddyaravind838@gmail.com"
-        git remote set-url origin https://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:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-        git add ${{ github.workspace }}/changelog/changelog_diff.xml
-        git commit -m "Save generated changelog_diff.xml"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # # Push the changelog file to GitHub
+    # - name: Push Changelog to GitHub
+    #   run: |
+    #     git config --global user.name "reddyaravind"
+    #     git config --global user.email "reddyaravind838@gmail.com"
+    #     git remote set-url origin https://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:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+    #     git add ${{ github.workspace }}/changelog/changelog_diff.xml
+    #     git commit -m "Save generated changelog_diff.xml"
+    #     git push
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # Checkout repository again to retrieve the changelog file
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+    # # Checkout repository again to retrieve the changelog file
+    # - name: Checkout Repository
+    #   uses: actions/checkout@v3
 
     # Apply changes to production using the committed changelog file
     - name: Apply Changes to Production
