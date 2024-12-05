@@ -108,7 +108,7 @@ jobs:
           --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
           --username="postgres" \
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-          --changeLogFile="/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
+          --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           diffChangeLog
         ls -l ${{ github.workspace }}/changelog 
 
