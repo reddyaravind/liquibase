@@ -62,35 +62,33 @@
 trigger:
   branches:
     include:
-      - main  # Trigger on changes to the 'main' branch
+      - main
 
 pool:
-  name: Default  # Agent pool name
-  demands:
-    - agent.name -equals DART  # Ensure it uses the DART agent
+  name: Default
 
-# variables:
-#   liquibaseImage: liquibase/liquibase:4.30  # Liquibase Docker image
-#   changelogDir: $(Build.SourcesDirectory)/changelog  # Changelog directory
-#   timestamp: $[format('{0:yyyyMMddHHmmss}', pipeline.startTime)]  # Timestamp for unique changelog names
+variables:
+  liquibaseImage: liquibase/liquibase:4.30
+  changelogDir: $(Build.SourcesDirectory)/changelog
+  timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
 
 jobs:
   - job: Liquibase
     displayName: 'Run Liquibase Changes'
     pool:
-      vmImage: 'ubuntu-latest'  # Use Ubuntu VM for the job
+      vmImage: 'ubuntu-latest'
 
     steps:
       - task: Checkout@1
         displayName: 'Checkout repository'
         
-      # Step 1: Set up the changelog directory
+      # Step 1: Setup changelog directory
       - script: |
           echo "Setting up Liquibase..."
-          mkdir -p $(changelogDir)  # Create changelog directory in the source directory
+          mkdir -p $(changelogDir)
         displayName: 'Setup changelog directory'
 
-      # Step 2: Generate Liquibase Changelog Diff (between two databases)
+      # Step 2: Generate Diff Changelog
       - script: |
           echo "Running Liquibase to generate Diff Changelog..."
           docker run --rm \
@@ -106,21 +104,9 @@ jobs:
             diffChangeLog
         displayName: 'Generate Diff Changelog'
 
-      # Step 3: List changelog files to check if it's created
+      # Step 3: List files in changelog directory
       - script: |
           echo "Listing files in changelog directory:"
-          ls -l $(changelogDir)  # Check if the changelog file is created
+          ls -l $(changelogDir)
         displayName: 'List changelog directory'
 
-      # Step 4: Apply the changelog to the target database
-      - script: |
-          echo "Applying changelog to the target database..."
-          docker run --rm \
-            -v $(changelogDir):/liquibase/changelog \
-            $(liquibaseImage) \
-            --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
-            --username="postgres" \
-            --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-            --changeLogFile="/liquibase/changelog/changelog_$(timestamp).xml" \
-            update
-        displayName: 'Apply Changelog to Database'
