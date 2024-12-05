@@ -3,15 +3,11 @@ trigger:
     include:
       - main  # Define your branch trigger (you can specify any branch)
 
-# variables:
-#   liquibaseImage: liquibase/liquibase:4.30  # Liquibase Docker image
-#   changelogDir: $(Build.SourcesDirectory)/changelog
-#   timestamp: $[format('{0:yyyyMMddHHmmss}', pipeline.startTime)] # Timestamp for unique changelog names
+
 pool:
   name: Default  # Your agent pool name
   demands:
     - agent.name -equals DART  # Ensure it uses the DART agent
-
 jobs:
   - job: Liquibase
     displayName: 'Run Liquibase Changes'
