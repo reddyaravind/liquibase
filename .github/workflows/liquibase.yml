@@ -23,21 +23,24 @@ jobs:
         mkdir -p ${{ github.workspace }}/changelog
         rm -rf ${{ github.workspace }}/changelog/*
 
-    # Generate Diff ChangeLog with Diagnostic Path
+    # Generate Diff ChangeLog with Enhanced Debugging
     - name: Run Liquibase to Generate Diff ChangeLog
       run: |
+        echo "Running Liquibase diffChangeLog command..."
         docker run --rm \
           --user root \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
+          --logLevel=debug \
           --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
           --referenceUsername="postgres" \
           --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
           --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
           --username="postgres" \
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-          --changeLogFile="/tmp/changelog_diff.xml" \
+          --changeLogFile="/tmp/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           diffChangeLog || echo "Liquibase command failed"
+
         echo "Liquibase diffChangeLog completed."
 
     # Debug: List files in changelog directory
@@ -45,9 +48,10 @@ jobs:
       run: |
         echo "Listing files in changelog directory:"
         ls -l ${{ github.workspace }}/changelog
-        if [ -f "/tmp/changelog_diff}.xml" ]; then
+        echo "Checking if changelog file exists in /tmp"
+        if [ -f "/tmp/changelog_diff_${{ env.TIMESTAMP }}.xml" ]; then
           echo "Changelog file saved at /tmp"
-          cat /tmp/changelog_diff.xml
+          cat /tmp/changelog_diff_${{ env.TIMESTAMP }}.xml
         else
           echo "No changelog file found in /tmp!"
         fi
@@ -62,4 +66,17 @@ jobs:
           --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
           --username="postgres" \
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-          --changeLogFile="/
+          --changeLogFile="/tmp/changelog_diff_${{ env.TIMESTAMP }}.xml" \
+          update
+        echo "Changes applied successfully to production!"
+
+    # Push the changelog file to GitHub
+    - name: Push Changelog to GitHub
+      run: |
+        git config --global user.name "reddyaravind"
+        git config --global user.email "reddyaravind838@gmail.com"
+        git add changelog/changelog_diff_${{ env.TIMESTAMP }}.xml
+        git commit -m "Save generated changelog_diff_${{ env.TIMESTAMP }}.xml"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
