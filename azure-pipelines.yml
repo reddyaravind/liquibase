@@ -194,7 +194,8 @@ jobs:
       - script: |
           echo "Running Liquibase to generate Diff Changelog..."
           docker run --rm \
-            -v $(Build.SourcesDirectory)/changelog:/liquibase/changelog \
+            # -v $(Build.SourcesDirectory)/changelog:/liquibase/changelog \
+            -v $(Build.SourcesDirectory)/changelog:/changelog \
             liquibase/liquibase:4.30 \
             --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:50269/railway" \
             --referenceUsername="postgres" \
@@ -202,7 +203,7 @@ jobs:
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
             --username="postgres" \
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-            --changeLogFile="$(Build.SourcesDirectory)/changelog/changelog.xml" \
+            --changeLogFile="/changelog/changelog.xml" \
             diffChangeLog || true
           echo "Command completed with exit code $?"
         displayName: 'Generate Diff Changelog'
