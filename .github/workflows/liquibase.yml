@@ -45,6 +45,7 @@ jobs:
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
           --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           diffChangeLog || echo "Liquibase command failed"
+        echo "Liquibase diffChangeLog completed."
         ls -l ${{ github.workspace }}/changelog
 
     # Debug: Verify Changelog Directory
