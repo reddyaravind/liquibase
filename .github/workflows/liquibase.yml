@@ -36,7 +36,7 @@ jobs:
           --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
           --username="postgres" \
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-          --changeLogFile="/tmp/changelog_diff_${{ env.TIMESTAMP }}.xml" \
+          --changeLogFile="/tmp/changelog_diff.xml" \
           diffChangeLog || echo "Liquibase command failed"
         echo "Liquibase diffChangeLog completed."
 
@@ -45,9 +45,9 @@ jobs:
       run: |
         echo "Listing files in changelog directory:"
         ls -l ${{ github.workspace }}/changelog
-        if [ -f "/tmp/changelog_diff_${{ env.TIMESTAMP }}.xml" ]; then
+        if [ -f "/tmp/changelog_diff}.xml" ]; then
           echo "Changelog file saved at /tmp"
-          cat /tmp/changelog_diff_${{ env.TIMESTAMP }}.xml
+          cat /tmp/changelog_diff.xml
         else
           echo "No changelog file found in /tmp!"
         fi
