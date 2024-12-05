@@ -35,7 +35,7 @@ jobs:
           --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
           --username="postgres" \
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-          --changeLogFile="${{ github.workspace }}/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
+          --changeLogFile="/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           diffChangeLog
         ls -l ${{ github.workspace }}/changelog # Check if the file is created
 
