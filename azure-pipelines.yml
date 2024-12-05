@@ -132,9 +132,9 @@ jobs:
     displayName: 'Run Liquibase Changes'
 
 
-    steps:
-      - task: Checkout@1
-        displayName: 'Checkout repository'
+#     steps:
+#       - task: Checkout@1
+#         displayName: 'Checkout repository'
         
       # # Step 1: Setup changelog directory
       # - script: |
