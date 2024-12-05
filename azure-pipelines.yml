@@ -130,8 +130,7 @@ variables:
 jobs:
   - job: Liquibase
     displayName: 'Run Liquibase Changes'
-    pool:
-      vmImage: 'ubuntu-latest'
+
 
     steps:
       - task: Checkout@1
