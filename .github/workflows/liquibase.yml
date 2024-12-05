@@ -180,7 +180,7 @@ jobs:
           --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \ 
           --referenceUsername="postgres" \ 
           --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \ 
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \ 
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
           --username="postgres" \ 
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
           --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
