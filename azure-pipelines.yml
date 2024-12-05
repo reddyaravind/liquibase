@@ -85,7 +85,7 @@ jobs:
       # Step 1: Setup changelog directory
       - script: |
           echo "Setting up Liquibase..."
-          mkdir -p $(changelogDir)
+          # mkdir -p $(changelogDir)
         displayName: 'Setup changelog directory'
 
       # Step 2: Generate Diff Changelog
@@ -100,13 +100,13 @@ jobs:
             --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
             --username="postgres" \
             --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-            --changeLogFile="/liquibase/changelog/changelog_$(timestamp).xml" \
+            --changeLogFile="/liquibase/changelog/changelog.xml" \
             diffChangeLog
         displayName: 'Generate Diff Changelog'
 
       # Step 3: List files in changelog directory
       - script: |
           echo "Listing files in changelog directory:"
-          ls -l $(changelogDir)
+          # ls -l $(changelogDir)
         displayName: 'List changelog directory'
 
