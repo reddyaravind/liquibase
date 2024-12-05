@@ -111,42 +111,90 @@
 #         displayName: 'List changelog directory'
 
 
+# trigger:
+#   branches:
+#     include:
+#       - main
+
+# pool:
+#   name: Default  # Your agent pool name
+#   demands:
+#     - agent.name -equals DART  # Ensure it uses the DART agent
+
+# variables:
+#   system.debug: true
+#   liquibaseImage: liquibase/liquibase:4.30
+#   changelogDir: $(Build.SourcesDirectory)/changelog
+#   timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
+
+# jobs:
+#   - job: Liquibase
+#     displayName: 'Run Liquibase Changes'
+
+
+#     steps:
+#       # - task: Checkout@1
+#       #   displayName: 'Checkout repository'
+        
+#       # Step 1: Setup changelog directory
+#       - script: |
+#           echo "Setting up Liquibase..."
+#           # mkdir -p $(Build.SourcesDirectory)/changelog
+#         displayName: 'Setup changelog directory'
+
+#       # Step 2: Generate Diff Changelog
+#       - script: |
+#           echo "Running Liquibase to generate Diff Changelog..."
+#           docker run --rm \
+#             -v $(changelogDir):/liquibase/changelog \
+#             liquibase/liquibase:4.30 \
+#             --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:50269/railway" \
+#             --referenceUsername="postgres" \
+#             --referencePassword="YfRHTcyFlfZzQSzAIjFNTuEecneeXNrC" \
+#             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
+#             --username="postgres" \
+#             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
+#             --changeLogFile="/liquibase/changelog/changelog.xml" \
+#             diffChangeLog
+#         displayName: 'Generate Diff Changelog'
+
+#       # Step 3: List files in changelog directory
+#       - script: |
+#           echo "Listing files in changelog directory:"
+#           ls -l $(Build.SourcesDirectory)/changelog
+#         displayName: 'List changelog directory'
+
 trigger:
   branches:
     include:
       - main
 
 pool:
-  name: Default  # Your agent pool name
+  name: Default
   demands:
-    - agent.name -equals DART  # Ensure it uses the DART agent
+    - agent.name -equals DART
 
 variables:
-  system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
-  timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
 
 jobs:
   - job: Liquibase
     displayName: 'Run Liquibase Changes'
 
-
     steps:
-      # - task: Checkout@1
-      #   displayName: 'Checkout repository'
-        
       # Step 1: Setup changelog directory
       - script: |
-          echo "Setting up Liquibase..."
-          # mkdir -p $(Build.SourcesDirectory)/changelog
+          echo "Creating changelog directory..."
+          mkdir -p $(Build.SourcesDirectory)/changelog
+          ls -l $(Build.SourcesDirectory)
         displayName: 'Setup changelog directory'
 
       # Step 2: Generate Diff Changelog
       - script: |
           echo "Running Liquibase to generate Diff Changelog..."
           docker run --rm \
-            -v $(changelogDir):/liquibase/changelog \
+            -v $(Build.SourcesDirectory)/changelog:/liquibase/changelog \
             liquibase/liquibase:4.30 \
             --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:50269/railway" \
             --referenceUsername="postgres" \
@@ -162,5 +210,5 @@ jobs:
       - script: |
           echo "Listing files in changelog directory:"
           ls -l $(Build.SourcesDirectory)/changelog
-          cat 
         displayName: 'List changelog directory'
+
