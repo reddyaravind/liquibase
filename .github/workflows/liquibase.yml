@@ -117,7 +117,7 @@ jobs:
       run: |
         echo "Listing files in changelog directory:"
         ls -l ${{ github.workspace }}/changelog
-        cat ${{ github.workspace }}/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml
+        # cat ${{ github.workspace }}/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml
 
     # Apply changes to production using the generated changelog file
     - name: Apply Changes to Production
