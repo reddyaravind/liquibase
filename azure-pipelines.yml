@@ -117,7 +117,9 @@ trigger:
       - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: Default  # Your agent pool name
+  demands:
+    - agent.name -equals DART  # Ensure it uses the DART agent
 
 jobs:
 - job: ExampleJob
