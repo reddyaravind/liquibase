@@ -20,41 +20,40 @@ jobs:
     # Clean Previous Changelog Directory
     - name: Clean Changelog Directory
       run: |
-        mkdir -p ${{ github.workspace }}/changelog
-        rm -rf ${{ github.workspace }}/changelog/*
+        mkdir -p $GITHUB_WORKSPACE/changelog
+        rm -rf $GITHUB_WORKSPACE/changelog/*
 
     # Generate Diff ChangeLog
     - name: Run Liquibase to Generate Diff ChangeLog
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          -v $GITHUB_WORKSPACE/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \ 
-          --referenceUsername="postgres" \ 
-          --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \ 
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \ 
-          --username="postgres" \ 
+          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
+          --referenceUsername="postgres" \
+          --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+          --username="postgres" \
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
           --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           diffChangeLog
-        ls -l ${{ github.workspace }}/changelog 
 
     # Debug: Verify Changelog Directory
     - name: Verify Changelog Directory
       run: |
         echo "Listing files in changelog directory:"
-        ls -l ${{ github.workspace }}/changelog
-        cat ${{ github.workspace }}/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml
+        ls -l $GITHUB_WORKSPACE/changelog
+        cat $GITHUB_WORKSPACE/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml
 
     # Apply changes to production using the generated changelog file
     - name: Apply Changes to Production
       run: |
         docker run --rm \
-          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          -v $GITHUB_WORKSPACE/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \ 
-          --username="postgres" \ 
-          --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \ 
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+          --username="postgres" \
+          --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
           --changeLogFile="changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           update
         echo "Changes applied successfully to production!"
