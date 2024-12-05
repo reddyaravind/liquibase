@@ -172,35 +172,20 @@ jobs:
         rm -rf ${{ github.workspace }}/changelog/*
 
     # Generate Diff ChangeLog
-    # - name: Run Liquibase to Generate Diff ChangeLog
-    #   run: |
-    #     docker run --rm \
-    #       -v ${{ github.workspace }}/changelog:/liquibase/changelog \
-    #       liquibase/liquibase \
-    #       --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \ 
-    #       --referenceUsername="postgres" \ 
-    #       --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \ 
-    #       --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
-    #       --username="postgres" \ 
-    #       --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-    #       --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
-    #       diffChangeLog
-    #     ls -l ${{ github.workspace }}/changelog 
     - name: Run Liquibase to Generate Diff ChangeLog
       run: |
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
+          --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:44168/railway" \
           --referenceUsername="postgres" \
-          --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+          --referencePassword="IqcvulBCcTFeCpuVHAMzHvrkaQrvjcbJ" \
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
           --username="postgres" \
-          --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
+          --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
           --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           diffChangeLog
-        ls -l ${{ github.workspace }}/changelog
-
+        ls -l ${{ github.workspace }}/changelog # Check if the file is created
 
     # Debug: Verify Changelog Directory
     - name: Verify Changelog Directory
@@ -215,9 +200,9 @@ jobs:
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
           liquibase/liquibase \
-          --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \ 
-          --username="postgres" \ 
-          --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \ 
+          --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
+          --username="postgres" \
+          --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
           --changeLogFile="changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
           update
         echo "Changes applied successfully to production!"
@@ -232,4 +217,3 @@ jobs:
         git push
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
