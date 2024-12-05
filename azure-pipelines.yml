@@ -69,10 +69,10 @@ pool:
   demands:
     - agent.name -equals DART  # Ensure it uses the DART agent
 
-variables:
-  liquibaseImage: liquibase/liquibase:4.30  # Liquibase Docker image
-  changelogDir: $(Build.SourcesDirectory)/changelog  # Changelog directory
-  timestamp: $[format('{0:yyyyMMddHHmmss}', pipeline.startTime)]  # Timestamp for unique changelog names
+# variables:
+#   liquibaseImage: liquibase/liquibase:4.30  # Liquibase Docker image
+#   changelogDir: $(Build.SourcesDirectory)/changelog  # Changelog directory
+#   timestamp: $[format('{0:yyyyMMddHHmmss}', pipeline.startTime)]  # Timestamp for unique changelog names
 
 jobs:
   - job: Liquibase
