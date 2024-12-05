@@ -43,16 +43,19 @@ jobs:
           --username="postgres" \
           --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
           --changeLogFile="/liquibase/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" \
-          --logLevel=debug \
           diffChangeLog || echo "Liquibase command failed"
-        ls -l ${{ github.workspace }}/changelog 
+        ls -l ${{ github.workspace }}/changelog
 
     # Debug: Verify Changelog Directory
     - name: Verify Changelog Directory
       run: |
         echo "Listing files in changelog directory:"
         ls -l ${{ github.workspace }}/changelog
-        cat ${{ github.workspace }}/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml || echo "File not found"
+        if [ -f "${{ github.workspace }}/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml" ]; then
+          cat ${{ github.workspace }}/changelog/changelog_diff_${{ env.TIMESTAMP }}.xml
+        else
+          echo "No changelog file found!"
+        fi
 
     # Apply changes to production using the generated changelog file
     - name: Apply Changes to Production
