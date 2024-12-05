@@ -158,8 +158,8 @@ jobs:
             diffChangeLog
         displayName: 'Generate Diff Changelog'
 
-      # # Step 3: List files in changelog directory
-      # - script: |
-      #     echo "Listing files in changelog directory:"
-      #     # ls -l $(Build.SourcesDirectory)/changelog
-      #   displayName: 'List changelog directory'
+      # Step 3: List files in changelog directory
+      - script: |
+          echo "Listing files in changelog directory:"
+          # ls -l $(Build.SourcesDirectory)/changelog
+        displayName: 'List changelog directory'
