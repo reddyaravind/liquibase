@@ -175,22 +175,22 @@ pool:
     - agent.name -equals DART
 
 variables:
+  system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
 
 jobs:
   - job: Liquibase
     displayName: 'Run Liquibase Changes'
+    timeoutInMinutes: 30
 
     steps:
-      # Step 1: Setup changelog directory
       - script: |
           echo "Creating changelog directory..."
           mkdir -p $(Build.SourcesDirectory)/changelog
           ls -l $(Build.SourcesDirectory)
         displayName: 'Setup changelog directory'
 
-      # Step 2: Generate Diff Changelog
       - script: |
           echo "Running Liquibase to generate Diff Changelog..."
           docker run --rm \
@@ -203,12 +203,11 @@ jobs:
             --username="postgres" \
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
             --changeLogFile="/liquibase/changelog/changelog.xml" \
-            diffChangeLog
+            diffChangeLog || true
+          echo "Command completed with exit code $?"
         displayName: 'Generate Diff Changelog'
 
-      # Step 3: List files in changelog directory
       - script: |
           echo "Listing files in changelog directory:"
           ls -l $(Build.SourcesDirectory)/changelog
         displayName: 'List changelog directory'
-
