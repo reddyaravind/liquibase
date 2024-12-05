@@ -148,12 +148,12 @@ jobs:
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             liquibase/liquibase:4.30 \
-            --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
+            --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:50269/railway" \
             --referenceUsername="postgres" \
-            --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
-            --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+            --referencePassword="YfRHTcyFlfZzQSzAIjFNTuEecneeXNrC" \
+            --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
             --username="postgres" \
-            --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
+            --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
             --changeLogFile="/liquibase/changelog/changelog.xml" \
             diffChangeLog
         displayName: 'Generate Diff Changelog'
