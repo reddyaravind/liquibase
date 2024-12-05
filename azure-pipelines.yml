@@ -3,10 +3,10 @@ trigger:
     include:
       - main  # Define your branch trigger (you can specify any branch)
 
-variables:
-  liquibaseImage: liquibase/liquibase:4.30  # Liquibase Docker image
-  changelogDir: $(Build.SourcesDirectory)/changelog
-  timestamp: $[format('{0:yyyyMMddHHmmss}', pipeline.startTime)] # Timestamp for unique changelog names
+# variables:
+#   liquibaseImage: liquibase/liquibase:4.30  # Liquibase Docker image
+#   changelogDir: $(Build.SourcesDirectory)/changelog
+#   timestamp: $[format('{0:yyyyMMddHHmmss}', pipeline.startTime)] # Timestamp for unique changelog names
 
 jobs:
   - job: Liquibase
@@ -35,7 +35,7 @@ jobs:
             --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
             --username="postgres" \
             --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-            --changeLogFile="/liquibase/changelog/changelog_diff_$(timestamp).xml" \
+            --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
             diffChangeLog
         displayName: 'Generate Diff Changelog'
 
@@ -54,7 +54,7 @@ jobs:
             --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
             --username="postgres" \
             --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
-            --changeLogFile="/liquibase/changelog/changelog_diff_$(timestamp).xml" \
+            --changeLogFile="/liquibase/changelog/changelog_diff).xml" \
             update
         displayName: 'Apply Changelog to Database'
 
