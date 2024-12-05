@@ -24,6 +24,12 @@ jobs:
         mkdir -p ${{ github.workspace }}/changelog
         echo "Working directory: ${{ github.workspace }}/changelog"
         
+        # Check current directory inside Docker container to debug
+        docker run --rm \
+          -v ${{ github.workspace }}/changelog:/liquibase/changelog \
+          liquibase/liquibase \
+          sh -c "echo 'Current directory inside container:' && pwd && ls -l /liquibase/changelog"
+
         # Run liquibase to generate the diff changelog and map the workspace directory
         docker run --rm \
           -v ${{ github.workspace }}/changelog:/liquibase/changelog \
