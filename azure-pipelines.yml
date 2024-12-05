@@ -133,14 +133,14 @@ jobs:
 
 
     steps:
-      - task: Checkout@1
-        displayName: 'Checkout repository'
+      # - task: Checkout@1
+      #   displayName: 'Checkout repository'
         
-      # # Step 1: Setup changelog directory
-      # - script: |
-      #     echo "Setting up Liquibase..."
-      #     # mkdir -p $(Build.SourcesDirectory)/changelog
-      #   displayName: 'Setup changelog directory'
+      # Step 1: Setup changelog directory
+      - script: |
+          echo "Setting up Liquibase..."
+          # mkdir -p $(Build.SourcesDirectory)/changelog
+        displayName: 'Setup changelog directory'
 
       # # Step 2: Generate Diff Changelog
       # - script: |
