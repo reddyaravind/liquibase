@@ -1,84 +1,71 @@
 trigger:
-  none # No automatic triggers; this pipeline is manually triggered
+  branches:
+    include:
+      - main  # Define your branch trigger (you can specify any branch)
 
-pr: none # No triggers for pull requests
-
-pool:
-  name: Default
-  demands:
-    - agent.name -equals DART
+variables:
+  liquibaseImage: liquibase/liquibase:4.30  # Liquibase Docker image
+  changelogDir: $(Build.SourcesDirectory)/changelog
+  timestamp: $[format('{0:yyyyMMddHHmmss}', pipeline.startTime)] # Timestamp for unique changelog names
 
 jobs:
-- job: liquibase_cicd
-  displayName: "Liquibase CI/CD Pipeline"
- 
+  - job: Liquibase
+    displayName: 'Run Liquibase Changes'
+    pool:
+      vmImage: 'ubuntu-latest'
 
+    steps:
+      - task: Checkout@1
+        displayName: 'Checkout repository'
+        
+      - script: |
+          echo "Setting up Liquibase..."
+          mkdir -p $(changelogDir)
+        displayName: 'Setup changelog directory'
 
+      # Step 1: Generate Liquibase Changelog Diff (between two databases)
+      - script: |
+          echo "Running Liquibase to generate Diff Changelog..."
+          docker run --rm \
+            -v $(changelogDir):/liquibase/changelog \
+            $(liquibaseImage) \
+            --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:38704/railway" \
+            --referenceUsername="postgres" \
+            --referencePassword="PZTcUieBZVvBuxkxfQJSRMeUFXZmdLFN" \
+            --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+            --username="postgres" \
+            --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
+            --changeLogFile="/liquibase/changelog/changelog_diff_$(timestamp).xml" \
+            diffChangeLog
+        displayName: 'Generate Diff Changelog'
 
+      # Step 2: List changelog files to check if it's created
+      - script: |
+          echo "Listing files in changelog directory:"
+          ls -l $(changelogDir)
+        displayName: 'List changelog directory'
 
+      # Step 3: Apply the changelog to the target database
+      - script: |
+          echo "Applying changelog to the target database..."
+          docker run --rm \
+            -v $(changelogDir):/liquibase/changelog \
+            $(liquibaseImage) \
+            --url="jdbc:postgresql://junction.proxy.rlwy.net:33223/railway" \
+            --username="postgres" \
+            --password="oPgUTipUBnhQBqbWnRYpeaKCdNJKMXQp" \
+            --changeLogFile="/liquibase/changelog/changelog_diff_$(timestamp).xml" \
+            update
+        displayName: 'Apply Changelog to Database'
 
+      # # Step 4: Optional: Push the generated changelog to GitHub (if desired)
+      # - task: GitHubActions@1
+      #   displayName: 'Push Changelog to GitHub'
+      #   inputs:
+      #     repository: 'https://github.com/<username>/<repository>.git'
+      #     branch: 'main'
+      #     commitMessage: 'Save generated changelog'
+      #     files: 'changelog/changelog_diff_$(timestamp).xml'
+      #   env:
+      #     GITHUB_TOKEN: $(GITHUB_TOKEN)  # You need to set this secret in your Azure Pipeline
 
-  steps:
-  - script: |
-      printenv
-    displayName: "List Environment Variables"
-
-  # Checkout the repository
-  - task: Checkout@1
-    displayName: "Checkout Repository"
-  - script: |
-      echo "Current working directory:"
-      echo "SYSTEM_DEFAULTWORKINGDIRECTORY is: $(SYSTEM_DEFAULTWORKINGDIRECTORY)"
-    displayName: Print Working Directory
-  # # Clean Previous Changelog Directory
-  # - script: |
-  #     mkdir -p $(System.DefaultWorkingDirectory)/changelog
-  #     rm -rf $(System.DefaultWorkingDirectory)/changelog/*
-  #   displayName: "Clean Changelog Directory"
-
-  # # Generate Diff ChangeLog
-  # - script: |
-  #     docker run --rm \
-  #       -v $(System.DefaultWorkingDirectory)/changelog:/liquibase/changelog \
-  #       liquibase/liquibase \
-  #       --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:44168/railway" \
-  #       --referenceUsername="postgres" \
-  #       --referencePassword="IqcvulBCcTFeCpuVHAMzHvrkaQrvjcbJ" \
-  #       --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
-  #       --username="postgres" \
-  #       --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
-  #       --changeLogFile="/liquibase/changelog/changelog_diff.xml" \
-  #       diffChangeLog
-  #     ls -l $(System.DefaultWorkingDirectory)/changelog
-  #   displayName: "Run Liquibase to Generate Diff ChangeLog"
-
-  # # Debug: Verify Changelog Directory
-  # - script: |
-  #     echo "Listing files in changelog directory:"
-  #     ls -l $(System.DefaultWorkingDirectory)/changelog
-  #     cat $(System.DefaultWorkingDirectory)/changelog/changelog_diff.xml
-  #   displayName: "Verify Changelog Directory"
-
-  # # Apply changes to production using the generated changelog file
-  # - script: |
-  #     docker run --rm \
-  #       -v $(System.DefaultWorkingDirectory)/changelog:/liquibase/changelog \
-  #       liquibase/liquibase \
-  #       --url="jdbc:postgresql://junction.proxy.rlwy.net:53001/railway" \
-  #       --username="postgres" \
-  #       --password="JvcHLRglkYkGzQHXvbSEPDmBSQXpcqdV" \
-  #       --changeLogFile="changelog/changelog_diff.xml" \
-  #       update
-  #     echo "Changes applied successfully to production!"
-  #   displayName: "Apply Changes to Production"
-
-  # # Push the changelog file to GitHub
-  # - script: |
-  #     git config --global user.name "reddyaravind"
-  #     git config --global user.email "reddyaravind838@gmail.com"
-  #     git add $(System.DefaultWorkingDirectory)/changelog/changelog_diff_$(TIMESTAMP).xml
-  #     git commit -m "Save generated changelog_diff_$(TIMESTAMP).xml"
-  #     git push
-  #   displayName: "Push Changelog to GitHub"
-  #   env:
-  #     GITHUB_TOKEN: $(GITHUB_TOKEN) # Define the GitHub token as a pipeline secret
