@@ -263,20 +263,25 @@ jobs:
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
             --username="postgres" \
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-            --changeLogFile="$(changelogDir)/changelog.xml" \
+            --changeLogFile="/liquibase/changelog/changelog.xml" \
             diffChangeLog || true
-          echo "$pwd"
           echo "Command completed with exit code $?"
         displayName: 'Generate Diff Changelog'
 
-      # Step 4: List Files in Changelog Directory
+      # Step 4: Verify and Print Changelog Immediately
       - script: |
-          echo "Listing files in changelog directory to verify output:"
-          ls -l $(changelogDir) || echo "Changelog directory is empty or inaccessible."
-        displayName: 'Verify Changelog Output'
+          echo "Verifying and printing the changelog file:"
+          if [ -f $(changelogDir)/changelog.xml ]; then
+            echo "changelog.xml found!"
+            echo "Content of changelog.xml:"
+            cat $(changelogDir)/changelog.xml
+          else
+            echo "changelog.xml file not found. Please check Liquibase command execution."
+          fi
+        displayName: 'Verify and Print Changelog File'
 
-      # Step 5: Print Changelog File Content (Optional)
+      # Step 5: List Files in Changelog Directory
       - script: |
-          echo "Printing changelog.xml file content:"
-          cat $(changelogDir)/changelog.xml || echo "changelog.xml file not found."
-        displayName: 'Print Changelog File Content (Optional)'
+          echo "Listing files in changelog directory for verification:"
+          ls -l $(changelogDir) || echo "Changelog directory is empty or inaccessible."
+        displayName: 'List Changelog Directory Files'
