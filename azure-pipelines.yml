@@ -247,6 +247,7 @@ jobs:
           mkdir -p $(changelogDir)
           echo "Setting permissions for changelog directory..."
           chmod -R 777 $(changelogDir)
+          rm -rf $(changelogDir)/changelog/*
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
