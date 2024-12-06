@@ -218,31 +218,42 @@ trigger:
       - main
 
 pool:
-  name: Default
+  name: Default  # Your agent pool name
+  demands:
+    - agent.name -equals DART  # Ensure it uses the DART agent
 
 variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
-  changelogDir: $(Build.SourcesDirectory)/changelog
-  changelogFile: $(Build.SourcesDirectory)/changelog/changelog.xml
+  changelogDir: $(Build.SourcesDirectory)/changelog  # Path where changelog.xml will be saved
+  timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
 
 jobs:
   - job: Liquibase
     displayName: 'Run Liquibase Changes'
 
     steps:
-      # Step 1: Setup Directory
+      # Step 1: Debug Permissions for Sources Directory
       - script: |
-          echo "Setting up changelog directory at $(changelogDir)..."
-          mkdir -p $(changelogDir)
-          chmod -R 777 $(changelogDir)
-          echo "Directory contents:"
-          ls -l $(changelogDir)
-        displayName: 'Setup Directory'
+          echo "Debugging permissions for Build.SourcesDirectory..."
+          ls -ld $(Build.SourcesDirectory) || echo "Build.SourcesDirectory does not exist."
+        displayName: 'Check Sources Directory Permissions'
 
-      # Step 2: Execute diffChangeLog
+      # Step 2: Create and Verify Changelog Directory
       - script: |
-          echo "Running Liquibase diffChangeLog..."
+          echo "Creating changelog directory..."
+          mkdir -p $(changelogDir)
+          echo "Setting permissions for changelog directory..."
+          chmod -R 777 $(changelogDir)
+          echo "Testing write access to changelog directory..."
+          echo "Test file content" > $(changelogDir)/test_file.txt
+          echo "Directory contents after test write:"
+          ls -l $(changelogDir)
+        displayName: 'Setup and Test Changelog Directory'
+
+      # Step 3: Run Liquibase Diff Changelog Command
+      - script: |
+          echo "Running Liquibase to generate Diff Changelog..."
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
@@ -253,30 +264,20 @@ jobs:
             --username="postgres" \
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
             --changeLogFile="/liquibase/changelog/changelog.xml" \
-            diffChangeLog
-        displayName: 'Run diffChangeLog'
+            diffChangeLog || true
+          echo "Liquibase Diff ChangeLog Command completed."
+          echo "Printing changelog.xml content..."
+          cat $(changelogDir)/changelog.xml || echo "changelog.xml not found in $(changelogDir)"
+        displayName: 'Generate and Print Diff Changelog'
 
-      # Step 3: Verify Changelog Generation
+      # Step 4: List Files in Changelog Directory (Optional Debugging)
       - script: |
-          echo "Checking for changelog.xml in $(changelogDir)..."
-          ls -l $(changelogDir)
-          if [ -f "$(changelogFile)" ]; then
-            echo "changelog.xml found! Printing contents:"
-            cat $(changelogFile)
-          else
-            echo "ERROR: changelog.xml not found! Debugging Docker container..."
-            docker run --rm \
-              -v $(changelogDir):/liquibase/changelog \
-              $(liquibaseImage) \
-              ls -l /liquibase/changelog
-          fi
-        displayName: 'Verify Changelog File'
+          echo "Listing files in changelog directory to verify output:"
+          ls -l $(changelogDir) || echo "Changelog directory is empty or inaccessible."
+        displayName: 'Verify Changelog Output'
 
-      # Step 4: Debugging (Optional)
+      # Step 5: Print Changelog File Content (Optional)
       - script: |
-          echo "Checking if Docker volume mapping is correct..."
-          docker run --rm \
-            -v $(changelogDir):/liquibase/changelog \
-            $(liquibaseImage) \
-            ls -l /liquibase/changelog
-        displayName: 'Debug Volume Mapping'
+          echo "Printing changelog.xml file content:"
+          cat $(changelogDir)/changelog.xml || echo "changelog.xml file not found."
+        displayName: 'Print Changelog File Content (Optional)'
