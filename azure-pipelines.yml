@@ -351,19 +351,20 @@ jobs:
           echo "Printing changelog.xml file content:"
           cat $(changelogDir)/changelog.xml || echo "changelog.xml file not found."
         displayName: 'Print Changelog File Content (Optional)'
-      # # Step 1: Apply Changelog to Production Database
-      # - script: |
-      #     echo "Applying Liquibase Changelog to production database..."
-      #     docker run --rm \
-      #       -v $(changelogDir):/liquibase/changelog \
-      #       $(liquibaseImage) \
-      #       --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
-      #       --username="postgres" \
-      #       --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-      #       --changeLogFile="/liquibase/changelog/changelog.xml" \
-      #       update || exit 1
-      #     echo "Liquibase update applied successfully to production database."
-      #   displayName: 'Apply Diff Changelog to Production Database'
+      
+      # Step 6: Apply Changelog to Production Database
+      - script: |
+          echo "Applying Liquibase Changelog to production database..."
+          docker run --rm \
+            -v $(changelogDir):/liquibase/changelog \
+            $(liquibaseImage) \
+            --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
+            --username="postgres" \
+            --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
+            --changeLogFile="/liquibase/changelog/changelog.xml" \
+            update || exit 1
+          echo "Liquibase update applied successfully to production database."
+        displayName: 'Apply Diff Changelog to Production Database'
       # - script: |
       #     echo "Verifying changes applied to the production database..."
       #     docker run --rm \
