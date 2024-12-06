@@ -265,6 +265,7 @@ jobs:
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
             --changeLogFile="/liquibase/changelog/changelog.xml" \
             diffChangeLog || true
+          echo "$pwd"
           echo "Command completed with exit code $?"
         displayName: 'Generate Diff Changelog'
 
