@@ -361,7 +361,7 @@ jobs:
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
             --username="postgres" \
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-            --changeLogFile="/liquibase/changelog/changelog.xml" \
+            --changeLogFile="$(changelogDir)/changelog.xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Diff Changelog to Production Database'
