@@ -239,32 +239,14 @@ jobs:
           ls -ld $(Build.SourcesDirectory) || echo "Build.SourcesDirectory does not exist."
         displayName: 'Check Sources Directory Permissions'
 
-      # Step 2: Create and Verify Changelog Directory
-      - script: |
-          echo "Creating changelog directory at $(changelogDir)..."
-          mkdir -p $(changelogDir)
-          echo "Setting permissions for changelog directory..."
-          chmod -R 777 $(changelogDir)
-          echo "Testing write access to changelog directory..."
-          echo "Test file content" > $(changelogDir)/test_file.txt
-          echo "Directory contents after test write:"
-          ls -l $(changelogDir)
-        displayName: 'Setup and Test Changelog Directory'
-
-      # Step 3: Test Docker Directory Mounting
-      - script: |
-          echo "Testing Docker directory mounting and write permissions..."
-          docker run --rm \
-            -v $(changelogDir):/liquibase/changelog \
-            $(liquibaseImage) \
-            sh -c "echo 'test content' > /liquibase/changelog/test_file.txt && ls -l /liquibase/changelog"
-          echo "Checking host directory for test file:"
-          ls -l $(changelogDir) || echo "Host directory is empty or inaccessible."
-        displayName: 'Test Docker Directory Mount'
+   
 
       # Step 4: Run Liquibase Diff Changelog Command
       - script: |
           echo "Running Liquibase to generate Diff Changelog..."
+          mkdir -p $(changelogDir)
+          echo "Setting permissions for changelog directory..."
+          chmod -R 777 $(changelogDir)
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
