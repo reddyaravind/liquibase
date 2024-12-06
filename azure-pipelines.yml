@@ -356,7 +356,7 @@ jobs:
       - script: |
           echo "Applying Liquibase Changelog to production database..."
           docker run --rm \
-            -v $(changelogDir):/liquibase/changelog \
+            # -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
             --username="postgres" \
