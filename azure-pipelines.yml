@@ -257,7 +257,7 @@ jobs:
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
             --username="postgres" \
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-            --changeLogFile="/liquibase/changelog/changelog.xml" \
+            --changeLogFile="changelog.xml" \
             diffChangeLog || true
           echo "Command completed with exit code $?"
         displayName: 'Generate Diff Changelog'
