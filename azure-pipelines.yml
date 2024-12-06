@@ -351,12 +351,6 @@ jobs:
           echo "Printing changelog.xml file content:"
           cat $(changelogDir)/changelog.xml || echo "changelog.xml file not found."
         displayName: 'Print Changelog File Content (Optional)'
-
-  - job: ApplyLiquibaseChangelog
-    displayName: 'Apply Liquibase Changelog to Production Database'
-    dependsOn: Liquibase
-    condition: succeeded()  # Ensure the previous job succeeded before applying changes
-    steps:
       # Step 1: Apply Changelog to Production Database
       - script: |
           echo "Applying Liquibase Changelog to production database..."
@@ -370,8 +364,6 @@ jobs:
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Diff Changelog to Production Database'
-
-      # Step 2: Verify Changes Applied (Optional Debugging)
       - script: |
           echo "Verifying changes applied to the production database..."
           docker run --rm \
@@ -383,3 +375,4 @@ jobs:
             status
         displayName: 'Verify Changelog Status in Production Database'
 
+  
