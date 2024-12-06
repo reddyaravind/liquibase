@@ -263,7 +263,7 @@ jobs:
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
             --username="postgres" \
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-            --changeLogFile="/liquibase/changelog/changelog.xml" \
+            --changeLogFile="/Users/aravindreddynarreddy/Downloads/myagent/_work/2/s/changelog/changelog.xml" \
             diffChangeLog || true
           echo "Liquibase Diff ChangeLog Command completed."
           echo "Printing changelog.xml content..."
