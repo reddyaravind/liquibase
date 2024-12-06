@@ -218,7 +218,7 @@ trigger:
       - main
 
 pool:
-  name: Default  # Your agent pool name
+  name: Default  # Replace with your agent pool name
   demands:
     - agent.name -equals DART  # Ensure it uses the DART agent
 
@@ -226,7 +226,7 @@ variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
-  timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
+  timestamp: $(Build.BuildId)  # Build-specific identifier for debugging
 
 jobs:
   - job: Liquibase
@@ -241,7 +241,7 @@ jobs:
 
       # Step 2: Create and Verify Changelog Directory
       - script: |
-          echo "Creating changelog directory..."
+          echo "Creating changelog directory at $(changelogDir)..."
           mkdir -p $(changelogDir)
           echo "Setting permissions for changelog directory..."
           chmod -R 777 $(changelogDir)
@@ -251,7 +251,18 @@ jobs:
           ls -l $(changelogDir)
         displayName: 'Setup and Test Changelog Directory'
 
-      # Step 3: Run Liquibase Diff Changelog Command
+      # Step 3: Test Docker Directory Mounting
+      - script: |
+          echo "Testing Docker directory mounting and write permissions..."
+          docker run --rm \
+            -v $(changelogDir):/liquibase/changelog \
+            $(liquibaseImage) \
+            sh -c "echo 'test content' > /liquibase/changelog/test_file.txt && ls -l /liquibase/changelog"
+          echo "Checking host directory for test file:"
+          ls -l $(changelogDir) || echo "Host directory is empty or inaccessible."
+        displayName: 'Test Docker Directory Mount'
+
+      # Step 4: Run Liquibase Diff Changelog Command
       - script: |
           echo "Running Liquibase to generate Diff Changelog..."
           docker run --rm \
@@ -268,20 +279,24 @@ jobs:
           echo "Command completed with exit code $?"
         displayName: 'Generate Diff Changelog'
 
-      # Step 4: Verify and Print Changelog Immediately
+      # Step 5: Verify Changelog File in Container
       - script: |
-          echo "Verifying and printing the changelog file:"
-          if [ -f $(changelogDir)/changelog.xml ]; then
-            echo "changelog.xml found!"
-            echo "Content of changelog.xml:"
-            cat $(changelogDir)/changelog.xml
-          else
-            echo "changelog.xml file not found. Please check Liquibase command execution."
-          fi
+          echo "Inspecting Liquibase container filesystem for changelog file..."
+          docker run --rm \
+            $(liquibaseImage) \
+            sh -c "ls -l /liquibase/changelog && cat /liquibase/changelog/changelog.xml || echo 'Changelog not found in container.'"
+        displayName: 'Verify Changelog File in Container'
+
+      # Step 6: Verify and Print Changelog File on Host
+      - script: |
+          echo "Checking for changelog.xml in $(changelogDir):"
+          ls -l $(changelogDir) && cat $(changelogDir)/changelog.xml || echo "changelog.xml not found in host directory."
         displayName: 'Verify and Print Changelog File'
 
-      # Step 5: List Files in Changelog Directory
+      # Optional Cleanup: Remove Test Files
       - script: |
-          echo "Listing files in changelog directory for verification:"
-          ls -l $(changelogDir) || echo "Changelog directory is empty or inaccessible."
-        displayName: 'List Changelog Directory Files'
+          echo "Cleaning up test files from changelog directory..."
+          rm -f $(changelogDir)/test_file.txt
+          echo "Cleanup completed. Directory contents:"
+          ls -l $(changelogDir)
+        displayName: 'Cleanup Test Files (Optional)'
