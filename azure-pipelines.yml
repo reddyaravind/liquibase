@@ -218,36 +218,31 @@ trigger:
       - main
 
 pool:
-  name: Default  # Replace with your agent pool name
-  demands:
-    - agent.name -equals DART  # Ensure it uses the DART agent
+  name: Default
 
 variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
-  timestamp: $(Build.BuildId)  # Build-specific identifier for debugging
+  changelogFile: $(Build.SourcesDirectory)/changelog/changelog.xml
 
 jobs:
   - job: Liquibase
     displayName: 'Run Liquibase Changes'
 
     steps:
-      # Step 1: Debug Permissions for Sources Directory
+      # Step 1: Setup Directory
       - script: |
-          echo "Debugging permissions for Build.SourcesDirectory..."
-          ls -ld $(Build.SourcesDirectory) || echo "Build.SourcesDirectory does not exist."
-        displayName: 'Check Sources Directory Permissions'
-
-   
-
-      # Step 4: Run Liquibase Diff Changelog Command
-      - script: |
-          echo "Running Liquibase to generate Diff Changelog..."
+          echo "Setting up changelog directory at $(changelogDir)..."
           mkdir -p $(changelogDir)
-          echo "Setting permissions for changelog directory..."
           chmod -R 777 $(changelogDir)
-          rm -rf $(changelogDir)/changelog/*
+          echo "Directory contents:"
+          ls -l $(changelogDir)
+        displayName: 'Setup Directory'
+
+      # Step 2: Execute diffChangeLog
+      - script: |
+          echo "Running Liquibase diffChangeLog..."
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
@@ -257,30 +252,31 @@ jobs:
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
             --username="postgres" \
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-            --changeLogFile="changelog.xml" \
-            diffChangeLog || true
-          echo "Command completed with exit code $?"
-          cat changelog.xml
-        displayName: 'Generate Diff Changelog'
+            --changeLogFile="/liquibase/changelog/changelog.xml" \
+            diffChangeLog
+        displayName: 'Run diffChangeLog'
 
-      # Step 5: Verify Changelog File in Container
+      # Step 3: Verify Changelog Generation
       - script: |
-          echo "Inspecting Liquibase container filesystem for changelog file..."
-          docker run --rm \
-            $(liquibaseImage) \
-            sh -c "ls -l /liquibase/changelog && cat /liquibase/changelog/changelog.xml || echo 'Changelog not found in container.'"
-        displayName: 'Verify Changelog File in Container'
-
-      # Step 6: Verify and Print Changelog File on Host
-      - script: |
-          echo "Checking for changelog.xml in $(changelogDir):"
-          ls -l $(changelogDir) && cat $(changelogDir)/changelog.xml || echo "changelog.xml not found in host directory."
-        displayName: 'Verify and Print Changelog File'
-
-      # Optional Cleanup: Remove Test Files
-      - script: |
-          echo "Cleaning up test files from changelog directory..."
-          rm -f $(changelogDir)/test_file.txt
-          echo "Cleanup completed. Directory contents:"
+          echo "Checking for changelog.xml in $(changelogDir)..."
           ls -l $(changelogDir)
-        displayName: 'Cleanup Test Files (Optional)'
+          if [ -f "$(changelogFile)" ]; then
+            echo "changelog.xml found! Printing contents:"
+            cat $(changelogFile)
+          else
+            echo "ERROR: changelog.xml not found! Debugging Docker container..."
+            docker run --rm \
+              -v $(changelogDir):/liquibase/changelog \
+              $(liquibaseImage) \
+              ls -l /liquibase/changelog
+          fi
+        displayName: 'Verify Changelog File'
+
+      # Step 4: Debugging (Optional)
+      - script: |
+          echo "Checking if Docker volume mapping is correct..."
+          docker run --rm \
+            -v $(changelogDir):/liquibase/changelog \
+            $(liquibaseImage) \
+            ls -l /liquibase/changelog
+        displayName: 'Debug Volume Mapping'
