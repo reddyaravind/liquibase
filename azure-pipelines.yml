@@ -260,6 +260,7 @@ jobs:
             --changeLogFile="changelog.xml" \
             diffChangeLog || true
           echo "Command completed with exit code $?"
+          cat changelog.xml
         displayName: 'Generate Diff Changelog'
 
       # Step 5: Verify Changelog File in Container
