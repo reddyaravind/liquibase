@@ -389,7 +389,7 @@ variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
-  changelogDirTemp: $(Build.SourcesDirectory)/changelog-repo 
+  changelogDirTemp: $(Build.SourcesDirectory)/liquibase
   githubRepo: reddyaravind/liquibase  # Replace with your GitHub repository
   githubToken: $(GITHUB_TOKEN)  # Securely store this in Azure Pipeline Secrets
 
@@ -416,11 +416,11 @@ jobs:
             --referencePassword="sTYcQKTWYMepxVUMYsRKOgyeETTCsBYv" \
             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
-            --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-            --changeLogFile="/liquibase/changelog/changelog.xml" \
+            --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
+            --changeLogFile="/liquibase/changelog/changelog_$(Build.BuildId).xml" \
             diffChangeLog
-          echo "Generated changelog.xml:"
-          cat $(changelogDir)/changelog.xml || echo "changelog.xml not found!"
+          echo "Generated changelog_$(Build.BuildId).xml:"
+          cat $(changelogDir)/changelog_$(Build.BuildId).xml || echo "changelog.xml not found!"
         displayName: 'Generate and Print Diff Changelog'
 
       # Step 3: Push Changelog to Repository
@@ -433,11 +433,11 @@ jobs:
           git clone https://github.com/${githubRepo}.git repo
 
           echo "Copying changelog.xml to the repository..."
-          cp $(changelogDir)/changelog.xml repo/changelog.xml
+          cp $(changelogDir)/changelog_$(Build.BuildId).xml repo/changelog_$(Build.BuildId).xml
 
           cd repo
           echo "Adding changelog.xml to the repository..."
-          git add changelog.xml
+          git add changelog_$(Build.BuildId).xml
 
           echo "Committing the changes..."
           git commit -m "Build ID: $(Build.BuildId)"
@@ -459,8 +459,8 @@ jobs:
           git clone https://github.com/${githubRepo}.git repo
           cd repo
           echo "Printing fetched changelog.xml:"
-          cat changelog.xml || echo "changelog.xml not found!"
-          echo changelog.xml > $(changelogDirTemp)/changelog.xml
+          cat changelog_$(Build.BuildId).xml || echo "changelog_$(Build.BuildId).xml not found!"
+          echo changelog_$(Build.BuildId).xml > $(changelogDirTemp)/changelog_$(Build.BuildId).xml
         displayName: 'Fetch and Print Changelog'
       
 
@@ -472,8 +472,8 @@ jobs:
             $(liquibaseImage) \
             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
-            --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-            --changeLogFile="$(changelogDirTemp)/changelog.xml" \
+            --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
+            --changeLogFile="$(changelogDirTemp)/changelog_$(Build.BuildId).xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Changelog to Production'
