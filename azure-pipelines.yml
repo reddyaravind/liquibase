@@ -394,8 +394,8 @@ variables:
   githubToken: $(GITHUB_TOKEN)  # Securely store this in Azure Pipeline Secrets
 
 jobs:
-  - job: GenerateChangelog
-    displayName: 'Generate Diff Changelog'
+  - job: GenerateAndApplyChangelog
+    displayName: 'Generate Diff Changelog and Apply to Production'
 
     steps:
       # Step 1: Set up changelog directory
@@ -451,12 +451,7 @@ jobs:
           echo "Changelog successfully pushed to the repository."
         displayName: 'Push Changelog to Repository'
 
-  - job: ApplyChangelog
-    dependsOn: GenerateChangelog
-    displayName: 'Apply Changelog to Production'
-
-    steps:
-      # Step 1: Clone repository to fetch changelog.xml
+      # Step 4: Clone repository to fetch changelog.xml for applying to production
       - script: |
           echo "Cloning the repository to fetch changelog.xml..."
           git clone https://github.com/reddyaravind/liquibase.git repo
@@ -465,10 +460,9 @@ jobs:
           echo "Printing fetched changelog.xml:"
           cat changelog_$(Build.BuildId).xml || echo "changelog_$(Build.BuildId).xml not found!"
           echo changelog_$(Build.BuildId).xml > $(changelogDirTemp)/changelog_$(Build.BuildId).xml
-        displayName: 'Fetch and Print Changelog'
-      
+        displayName: 'Fetch and Print Changelog for Production'
 
-      # Step 2: Apply Changelog to Production
+      # Step 5: Apply Changelog to Production Database
       - script: |
           echo "Applying Liquibase Changelog to production database..."
           docker run --rm \
@@ -481,3 +475,4 @@ jobs:
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Changelog to Production'
+
