@@ -454,8 +454,8 @@ jobs:
       # Step 4: Clone repository to fetch changelog.xml for applying to production
       - script: |
           echo "Cloning the repository to fetch changelog.xml..."
-          git clone https://github.com/reddyaravind/liquibase.git repo
-          cd repo
+          git clone https://github.com/reddyaravind/liquibase.git repo_temp
+          cd repo_temp
           cd changelog
           echo "Printing fetched changelog.xml:"
           cat changelog_$(Build.BuildId).xml || echo "changelog_$(Build.BuildId).xml not found!"
