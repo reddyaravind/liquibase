@@ -389,7 +389,7 @@ variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
-  changelogDirTemp: $(Build.SourcesDirectory)/changelog-temp
+  changelogDirTemp: $(Build.SourcesDirectory)/changelog-repo 
   githubRepo: reddyaravind/liquibase  # Replace with your GitHub repository
   githubToken: $(GITHUB_TOKEN)  # Securely store this in Azure Pipeline Secrets
 
