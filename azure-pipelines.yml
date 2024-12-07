@@ -327,12 +327,12 @@ jobs:
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
-            --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:50269/railway" \
+            --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:13915/railway" \
             --referenceUsername="postgres" \
-            --referencePassword="YfRHTcyFlfZzQSzAIjFNTuEecneeXNrC" \
-            --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
+            --referencePassword="sTYcQKTWYMepxVUMYsRKOgyeETTCsBYv" \
+            --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
-            --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
+            --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
             --changeLogFile="/liquibase/changelog/changelog.xml" \
             diffChangeLog || true
           echo "Liquibase Diff ChangeLog Command completed."
@@ -358,9 +358,9 @@ jobs:
           docker run --rm \
             # -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
-            --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
+            --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
-            --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
+            --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
             --changeLogFile="/Users/aravindreddynarreddy/Downloads/myagent/_work/2/s/changelog/changelog.xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
