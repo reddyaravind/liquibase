@@ -403,6 +403,8 @@ jobs:
           echo "Setting up changelog directory..."
           mkdir -p $(changelogDir)
           chmod -R 777 $(changelogDir)
+          mkdir -p $(changelogDirTemp)
+          chmod -R 777 $(changelogDirTemp)
         displayName: 'Setup Changelog Directory'
 
       # Step 2: Generate Diff Changelog
