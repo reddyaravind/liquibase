@@ -393,7 +393,7 @@ variables:
   changelogDirTemp: $(Build.SourcesDirectory)/changelog-temp
   changelogDir: $(Build.SourcesDirectory)/changelog  # Temporary directory for changelog generation
   changelogFile: changelog/changelog.xml
-  githubRepo: reddyaravind/liquibase-changelogs  # Replace with your GitHub repository
+  githubRepo: reddyaravind/liquibase  # Replace with your GitHub repository
   githubToken: $(GITHUB_TOKEN)  # GitHub Personal Access Token stored in Azure DevOps secrets
   buildId: $(Build.BuildId)
 
