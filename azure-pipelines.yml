@@ -459,7 +459,7 @@ jobs:
       # Step 2: Print Fetched Changelog File Content
       - script: |
           echo "Printing the fetched changelog.xml file content:"
-          cat $(changelogDir)/changelog.xml || echo "changelog.xml not found!"
+          cat $(changelogDirTemp)/changelog.xml || echo "changelog.xml not found!"
         displayName: 'Print Fetched Changelog File'
 
       # Step 3: Apply Changelog to Production Database
