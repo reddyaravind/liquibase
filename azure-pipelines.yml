@@ -389,7 +389,7 @@ variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
-  changelogDirTemp: $(Build.SourcesDirectory)/liquibase
+  changelogDirTemp: $(Build.SourcesDirectory)/changelog
   githubRepo: reddyaravind/liquibase  # Replace with your GitHub repository
   githubToken: $(GITHUB_TOKEN)  # Securely store this in Azure Pipeline Secrets
 
@@ -403,8 +403,8 @@ jobs:
           echo "Setting up changelog directory..."
           mkdir -p $(changelogDir)
           chmod -R 777 $(changelogDir)
-          mkdir -p $(changelogDirTemp)
-          chmod -R 777 $(changelogDirTemp)
+          mkdir -p $(Build.SourcesDirectory)/changelog
+          chmod -R 777 $(Build.SourcesDirectory)/changelog
         displayName: 'Setup Changelog Directory'
 
       # Step 2: Generate Diff Changelog
@@ -461,7 +461,7 @@ jobs:
           cd changelog
           echo "Printing fetched changelog.xml:"
           cat changelog_$(Build.BuildId).xml || echo "changelog_$(Build.BuildId).xml not found!"
-          echo changelog_$(Build.BuildId).xml > $(changelogDirTemp)/changelog_$(Build.BuildId).xml
+          echo changelog_$(Build.BuildId).xml > $(Build.SourcesDirectory)/changelog/changelog_$(Build.BuildId).xml
         displayName: 'Fetch and Print Changelog for Production'
 
       # Step 5: Apply Changelog to Production Database
@@ -473,7 +473,7 @@ jobs:
             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
             --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
-            --changeLogFile="$(changelogDirTemp)/changelog_$(Build.BuildId).xml" \
+            --changeLogFile="$(Build.SourcesDirectory)/changelog/changelog_$(Build.BuildId).xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Changelog to Production'
