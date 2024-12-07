@@ -461,6 +461,7 @@ jobs:
           echo "Cloning the repository to fetch changelog.xml..."
           git clone https://github.com/reddyaravind/liquibase.git repo
           cd repo
+          cd changelog
           echo "Printing fetched changelog.xml:"
           cat changelog_$(Build.BuildId).xml || echo "changelog_$(Build.BuildId).xml not found!"
           echo changelog_$(Build.BuildId).xml > $(changelogDirTemp)/changelog_$(Build.BuildId).xml
