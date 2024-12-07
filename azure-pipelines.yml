@@ -383,31 +383,28 @@ trigger:
       - main
 
 pool:
-  name: Default  # Your agent pool name
+  name: Default
   demands:
-    - agent.name -equals DART  # Ensure it uses the DART agent
+    - agent.name -equals DART
 
 variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
-  changelogDir: $(Build.SourcesDirectory)/changelog  # Temporary path for changelog generation
-  changelogRepo: https://github.com/reddyaravind/liquibase-changelogs.git  # Replace with your repository URL
+  changelogDir: $(Build.SourcesDirectory)/changelog  # Temporary directory for changelog generation
   changelogFile: changelog/changelog.xml
+  githubRepo: reddyaravind/liquibase-changelogs  # Replace with your GitHub repository
+  githubToken: $(GITHUB_TOKEN)  # GitHub Personal Access Token stored in Azure DevOps secrets
+  buildId: $(Build.BuildId)
 
 jobs:
   - job: GenerateChangelog
-    displayName: 'Generate Liquibase Changelog'
+    displayName: 'Generate and Push Changelog'
 
     steps:
-      # Step 1: Clone Changelog Repository
-      - script: |
-          echo "Cloning changelog repository..."
-          git clone $(changelogRepo) changelog-repo
-        displayName: 'Clone Changelog Repository'
-
-      # Step 2: Run Liquibase Diff Changelog Command
+      # Step 1: Generate Liquibase Diff Changelog
       - script: |
           echo "Running Liquibase to generate Diff Changelog..."
+          mkdir -p $(changelogDir)
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
@@ -419,39 +416,44 @@ jobs:
             --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
             --changeLogFile="/liquibase/changelog/changelog.xml" \
             diffChangeLog || true
-          echo "Liquibase Diff ChangeLog Command completed."
+          echo "Liquibase Diff Changelog Command completed."
+        displayName: 'Generate Changelog'
 
-          echo "Copying generated changelog.xml to repository directory..."
-          mv $(changelogDir)/changelog.xml changelog-repo/
-        displayName: 'Generate and Copy Changelog'
-
-      # Step 3: Push Changelog to Repository
+      # Step 2: Push changelog.xml to GitHub using REST API
       - script: |
-          cd changelog-repo
-          git config user.name "reddyaravind"
-          git config user.email "reddyaravind838@gmail.com"
-          git add .
-          git commit -m "Add changelog for build $(Build.BuildId)"
-          git push origin main
-        displayName: 'Push Changelog to Repository'
+          echo "Pushing changelog.xml to GitHub repository..."
+          base64File=$(base64 $(changelogDir)/changelog.xml | tr -d '\n')
+          commitMessage="Build ID: $(buildId)"
+          apiUrl="https://api.github.com/repos/$(githubRepo)/contents/$(changelogFile)"
+          curl -X PUT \
+            -H "Authorization: token $(githubToken)" \
+            -H "Content-Type: application/json" \
+            -d "{\"message\": \"${commitMessage}\", \"content\": \"${base64File}\"}" \
+            ${apiUrl} || exit 1
+          echo "Changelog successfully pushed with commit message: ${commitMessage}"
+        displayName: 'Push Changelog to GitHub'
 
   - job: ApplyChangelog
-    displayName: 'Apply Liquibase Changelog to Production'
+    displayName: 'Fetch and Apply Changelog to Production'
     dependsOn: GenerateChangelog
     condition: succeeded()
 
     steps:
-      # Step 1: Clone Changelog Repository
+      # Step 1: Fetch changelog.xml from GitHub using REST API
       - script: |
-          echo "Cloning changelog repository..."
-          git clone $(changelogRepo) changelog-repo
-        displayName: 'Clone Changelog Repository'
+          echo "Fetching changelog.xml from GitHub repository..."
+          apiUrl="https://api.github.com/repos/$(githubRepo)/contents/$(changelogFile)"
+          response=$(curl -s -H "Authorization: token $(githubToken)" ${apiUrl})
+          fileContent=$(echo $response | jq -r '.content' | base64 -d)
+          echo "$fileContent" > $(changelogDir)/changelog.xml
+          echo "changelog.xml successfully fetched and saved."
+        displayName: 'Fetch Changelog from GitHub'
 
       # Step 2: Apply Changelog to Production Database
       - script: |
           echo "Applying Liquibase Changelog to production database..."
           docker run --rm \
-            -v $(System.DefaultWorkingDirectory)/changelog-repo:/liquibase/changelog \
+            -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
