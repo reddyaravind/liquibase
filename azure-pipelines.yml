@@ -446,7 +446,7 @@ jobs:
           git commit -m "Build ID: $(Build.BuildId)"
 
           echo "Pushing the changes to the repository..."
-          git push https://${githubToken}@github.com/${githubRepo}.git main || exit 1
+          git push https://$(GITHUB_TOKEN)@github.com/liquibase.git main || exit 1
 
           echo "Changelog successfully pushed to the repository."
         displayName: 'Push Changelog to Repository'
@@ -459,7 +459,7 @@ jobs:
       # Step 1: Clone repository to fetch changelog.xml
       - script: |
           echo "Cloning the repository to fetch changelog.xml..."
-          git clone https://github.com/${githubRepo}.git repo
+          git clone https://github.com/liquibase.git repo
           cd repo
           echo "Printing fetched changelog.xml:"
           cat changelog_$(Build.BuildId).xml || echo "changelog_$(Build.BuildId).xml not found!"
