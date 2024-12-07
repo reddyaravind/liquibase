@@ -390,6 +390,7 @@ pool:
 variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
+  changelogDirTemp: $(Build.SourcesDirectory)/changelog-temp
   changelogDir: $(Build.SourcesDirectory)/changelog  # Temporary directory for changelog generation
   changelogFile: changelog/changelog.xml
   githubRepo: reddyaravind/liquibase-changelogs  # Replace with your GitHub repository
@@ -419,7 +420,13 @@ jobs:
           echo "Liquibase Diff Changelog Command completed."
         displayName: 'Generate Changelog'
 
-      # Step 2: Push changelog.xml to GitHub using REST API
+      # Step 2: Print Generated Changelog File Content
+      - script: |
+          echo "Printing the generated changelog.xml file content:"
+          cat $(changelogDir)/changelog.xml || echo "changelog.xml not found!"
+        displayName: 'Print Generated Changelog File'
+
+      # Step 3: Push changelog.xml to GitHub using REST API
       - script: |
           echo "Pushing changelog.xml to GitHub repository..."
           base64File=$(base64 $(changelogDir)/changelog.xml | tr -d '\n')
@@ -445,11 +452,17 @@ jobs:
           apiUrl="https://api.github.com/repos/$(githubRepo)/contents/$(changelogFile)"
           response=$(curl -s -H "Authorization: token $(githubToken)" ${apiUrl})
           fileContent=$(echo $response | jq -r '.content' | base64 -d)
-          echo "$fileContent" > $(changelogDir)/changelog.xml
+          echo "$fileContent" > $(changelogDirTemp)/changelog.xml
           echo "changelog.xml successfully fetched and saved."
         displayName: 'Fetch Changelog from GitHub'
 
-      # Step 2: Apply Changelog to Production Database
+      # Step 2: Print Fetched Changelog File Content
+      - script: |
+          echo "Printing the fetched changelog.xml file content:"
+          cat $(changelogDir)/changelog.xml || echo "changelog.xml not found!"
+        displayName: 'Print Fetched Changelog File'
+
+      # Step 3: Apply Changelog to Production Database
       - script: |
           echo "Applying Liquibase Changelog to production database..."
           docker run --rm \
@@ -458,7 +471,7 @@ jobs:
             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
             --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
-            --changeLogFile="/liquibase/changelog/changelog.xml" \
+            --changeLogFile="$(changelogDirTemp)/changelog.xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Changelog to Production'
