@@ -282,6 +282,101 @@
 #           cat $(changelogDir)/changelog.xml || echo "changelog.xml file not found."
 #         displayName: 'Print Changelog File Content (Optional)'
 
+# trigger:
+#   branches:
+#     include:
+#       - main
+
+# pool:
+#   name: Default  # Your agent pool name
+#   demands:
+#     - agent.name -equals DART  # Ensure it uses the DART agent
+
+# variables:
+#   system.debug: true
+#   liquibaseImage: liquibase/liquibase:4.30
+#   changelogDir: $(Build.SourcesDirectory)/changelog  # Path where changelog.xml will be saved
+#   timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
+
+# jobs:
+#   - job: Liquibase
+#     displayName: 'Run Liquibase Changes'
+
+#     steps:
+#       # Step 1: Debug Permissions for Sources Directory
+#       - script: |
+#           echo "Debugging permissions for Build.SourcesDirectory..."
+#           ls -ld $(Build.SourcesDirectory) || echo "Build.SourcesDirectory does not exist."
+#         displayName: 'Check Sources Directory Permissions'
+
+#       # Step 2: Create and Verify Changelog Directory
+#       - script: |
+#           echo "Creating changelog directory..."
+#           mkdir -p $(changelogDir)
+#           echo "Setting permissions for changelog directory..."
+#           chmod -R 777 $(changelogDir)
+#           echo "Testing write access to changelog directory..."
+#           echo "Test file content" > $(changelogDir)/test_file.txt
+#           echo "Directory contents after test write:"
+#           ls -l $(changelogDir)
+#         displayName: 'Setup and Test Changelog Directory'
+
+#       # Step 3: Run Liquibase Diff Changelog Command
+#       - script: |
+#           echo "Running Liquibase to generate Diff Changelog..."
+#           docker run --rm \
+#             -v $(changelogDir):/liquibase/changelog \
+#             $(liquibaseImage) \
+#             --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:13915/railway" \
+#             --referenceUsername="postgres" \
+#             --referencePassword="sTYcQKTWYMepxVUMYsRKOgyeETTCsBYv" \
+#             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
+#             --username="postgres" \
+#             --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
+#             --changeLogFile="/liquibase/changelog/changelog.xml" \
+#             diffChangeLog || true
+#           echo "Liquibase Diff ChangeLog Command completed."
+#           echo "Printing changelog.xml content..."
+#           cat $(changelogDir)/changelog.xml || echo "changelog.xml not found in $(changelogDir)"
+#         displayName: 'Generate and Print Diff Changelog'
+
+#       # Step 4: List Files in Changelog Directory (Optional Debugging)
+#       - script: |
+#           echo "Listing files in changelog directory to verify output:"
+#           ls -l $(changelogDir) || echo "Changelog directory is empty or inaccessible."
+#         displayName: 'Verify Changelog Output'
+
+#       # Step 5: Print Changelog File Content (Optional)
+#       - script: |
+#           echo "Printing changelog.xml file content:"
+#           cat $(changelogDir)/changelog.xml || echo "changelog.xml file not found."
+#         displayName: 'Print Changelog File Content (Optional)'
+      
+#       # Step 6: Apply Changelog to Production Database
+#       - script: |
+#           echo "Applying Liquibase Changelog to production database..."
+#           docker run --rm \
+#             # -v $(changelogDir):/liquibase/changelog \
+#             $(liquibaseImage) \
+#             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
+#             --username="postgres" \
+#             --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
+#             --changeLogFile="/Users/aravindreddynarreddy/Downloads/myagent/_work/2/s/changelog/changelog.xml" \
+#             update || exit 1
+#           echo "Liquibase update applied successfully to production database."
+#         displayName: 'Apply Diff Changelog to Production Database'
+      # - script: |
+      #     echo "Verifying changes applied to the production database..."
+      #     docker run --rm \
+      #       $(liquibaseImage) \
+      #       --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
+      #       --username="postgres" \
+      #       --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
+      #       --changeLogFile="/liquibase/changelog/changelog.xml" \
+      #       status
+      #   displayName: 'Verify Changelog Status in Production Database'
+
+
 trigger:
   branches:
     include:
@@ -295,33 +390,22 @@ pool:
 variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
-  changelogDir: $(Build.SourcesDirectory)/changelog  # Path where changelog.xml will be saved
-  timestamp: $(Build.BuildId)  # Simplified timestamp for debugging
+  changelogDir: $(Build.SourcesDirectory)/changelog  # Temporary path for changelog generation
+  changelogRepo: https://github.com/reddyaravind/liquibase-changelogs.git  # Replace with your repository URL
+  changelogFile: changelog/changelog.xml
 
 jobs:
-  - job: Liquibase
-    displayName: 'Run Liquibase Changes'
+  - job: GenerateChangelog
+    displayName: 'Generate Liquibase Changelog'
 
     steps:
-      # Step 1: Debug Permissions for Sources Directory
+      # Step 1: Clone Changelog Repository
       - script: |
-          echo "Debugging permissions for Build.SourcesDirectory..."
-          ls -ld $(Build.SourcesDirectory) || echo "Build.SourcesDirectory does not exist."
-        displayName: 'Check Sources Directory Permissions'
+          echo "Cloning changelog repository..."
+          git clone $(changelogRepo) changelog-repo
+        displayName: 'Clone Changelog Repository'
 
-      # Step 2: Create and Verify Changelog Directory
-      - script: |
-          echo "Creating changelog directory..."
-          mkdir -p $(changelogDir)
-          echo "Setting permissions for changelog directory..."
-          chmod -R 777 $(changelogDir)
-          echo "Testing write access to changelog directory..."
-          echo "Test file content" > $(changelogDir)/test_file.txt
-          echo "Directory contents after test write:"
-          ls -l $(changelogDir)
-        displayName: 'Setup and Test Changelog Directory'
-
-      # Step 3: Run Liquibase Diff Changelog Command
+      # Step 2: Run Liquibase Diff Changelog Command
       - script: |
           echo "Running Liquibase to generate Diff Changelog..."
           docker run --rm \
@@ -336,128 +420,43 @@ jobs:
             --changeLogFile="/liquibase/changelog/changelog.xml" \
             diffChangeLog || true
           echo "Liquibase Diff ChangeLog Command completed."
-          echo "Printing changelog.xml content..."
-          cat $(changelogDir)/changelog.xml || echo "changelog.xml not found in $(changelogDir)"
-        displayName: 'Generate and Print Diff Changelog'
 
-      # Step 4: List Files in Changelog Directory (Optional Debugging)
-      - script: |
-          echo "Listing files in changelog directory to verify output:"
-          ls -l $(changelogDir) || echo "Changelog directory is empty or inaccessible."
-        displayName: 'Verify Changelog Output'
+          echo "Copying generated changelog.xml to repository directory..."
+          mv $(changelogDir)/changelog.xml changelog-repo/
+        displayName: 'Generate and Copy Changelog'
 
-      # Step 5: Print Changelog File Content (Optional)
+      # Step 3: Push Changelog to Repository
       - script: |
-          echo "Printing changelog.xml file content:"
-          cat $(changelogDir)/changelog.xml || echo "changelog.xml file not found."
-        displayName: 'Print Changelog File Content (Optional)'
-      
-      # Step 6: Apply Changelog to Production Database
+          cd changelog-repo
+          git config user.name "reddyaravind"
+          git config user.email "reddyaravind838@gmail.com"
+          git add .
+          git commit -m "Add changelog for build $(Build.BuildId)"
+          git push origin main
+        displayName: 'Push Changelog to Repository'
+
+  - job: ApplyChangelog
+    displayName: 'Apply Liquibase Changelog to Production'
+    dependsOn: GenerateChangelog
+    condition: succeeded()
+
+    steps:
+      # Step 1: Clone Changelog Repository
+      - script: |
+          echo "Cloning changelog repository..."
+          git clone $(changelogRepo) changelog-repo
+        displayName: 'Clone Changelog Repository'
+
+      # Step 2: Apply Changelog to Production Database
       - script: |
           echo "Applying Liquibase Changelog to production database..."
           docker run --rm \
-            # -v $(changelogDir):/liquibase/changelog \
+            -v $(System.DefaultWorkingDirectory)/changelog-repo:/liquibase/changelog \
             $(liquibaseImage) \
             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
             --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
-            --changeLogFile="/Users/aravindreddynarreddy/Downloads/myagent/_work/2/s/changelog/changelog.xml" \
+            --changeLogFile="/liquibase/changelog/changelog.xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
-        displayName: 'Apply Diff Changelog to Production Database'
-      # - script: |
-      #     echo "Verifying changes applied to the production database..."
-      #     docker run --rm \
-      #       $(liquibaseImage) \
-      #       --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
-      #       --username="postgres" \
-      #       --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-      #       --changeLogFile="/liquibase/changelog/changelog.xml" \
-      #       status
-      #   displayName: 'Verify Changelog Status in Production Database'
-
-
-# trigger:
-#   branches:
-#     include:
-#       - main
-
-# pool:
-#   name: Default
-#   demands:
-#     - agent.name -equals DART  # Ensure it uses the DART agent
-
-# variables:
-#   system.debug: true
-#   liquibaseImage: liquibase/liquibase:4.30
-#   changelogDir: $(Build.ArtifactStagingDirectory)/changelog  # Use Artifact Staging Directory for persistence
-#   changelogFile: $(changelogDir)/changelog.xml
-#   timestamp: $(Build.BuildId)
-
-# jobs:
-#   - job: Liquibase
-#     displayName: 'Run Liquibase Changes'
-
-#     steps:
-#       # Step 1: Create and Verify Changelog Directory
-#       - script: |
-#           echo "Creating changelog directory..."
-#           mkdir -p $(changelogDir)
-#           echo "Setting permissions for changelog directory..."
-#           chmod -R 777 $(changelogDir)
-#           echo "Testing write access to changelog directory..."
-#           echo "Test file content" > $(changelogDir)/test_file.txt
-#           echo "Directory contents after test write:"
-#           ls -l $(changelogDir)
-#         displayName: 'Setup and Test Changelog Directory'
-
-#       # Step 2: Generate Liquibase Diff Changelog Command
-#       - script: |
-#           echo "Running Liquibase to generate Diff Changelog..."
-#           docker run --rm \
-#             -v $(changelogDir):/liquibase/changelog \
-#             $(liquibaseImage) \
-#             --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:50269/railway" \
-#             --referenceUsername="postgres" \
-#             --referencePassword="YfRHTcyFlfZzQSzAIjFNTuEecneeXNrC" \
-#             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
-#             --username="postgres" \
-#             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-#             --changeLogFile="/liquibase/changelog/changelog.xml" \
-#             diffChangeLog || true
-#           echo "Liquibase Diff ChangeLog Command completed."
-#           echo "Printing changelog.xml content..."
-#           cat $(changelogFile) || echo "changelog.xml not found in $(changelogDir)"
-#         displayName: 'Generate Diff Changelog'
-
-#       # Step 3: Publish the Changelog File as an Artifact
-#       - publish: $(changelogDir)
-#         artifact: changelog
-#         displayName: 'Publish Changelog as Artifact'
-
-#   - job: ApplyChangelog
-#     displayName: 'Apply Liquibase Changelog to Production Database'
-#     dependsOn: Liquibase
-#     condition: succeeded()
-
-#     steps:
-#       # Step 1: Download the Published Artifact (Changelog)
-#       - download: current
-#         artifact: changelog
-#         displayName: 'Download Changelog Artifact'
-
-#       # Step 2: Apply Diff Changelog to Production Database
-#       - script: |
-#           echo "Applying Liquibase Changelog to production database..."
-#           docker run --rm \
-#             -v $(Pipeline.Workspace)/changelog:/liquibase/changelog \
-#             $(liquibaseImage) \
-#             --url="jdbc:postgresql://autorack.proxy.rlwy.net:26951/railway" \
-#             --username="postgres" \
-#             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-#             --changeLogFile="$(Pipeline.Workspace)/changelog/changelog.xml" \
-#             update || exit 1
-#           echo "Liquibase update applied successfully to production database."
-#         displayName: 'Apply Diff Changelog to Production Database'
-
-  
+        displayName: 'Apply Changelog to Production'
