@@ -389,6 +389,7 @@ variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
+  changelogDirTemp: $(Build.SourcesDirectory)/changelog-temp
   githubRepo: reddyaravind/liquibase  # Replace with your GitHub repository
   githubToken: $(GITHUB_TOKEN)  # Securely store this in Azure Pipeline Secrets
 
@@ -459,7 +460,9 @@ jobs:
           cd repo
           echo "Printing fetched changelog.xml:"
           cat changelog.xml || echo "changelog.xml not found!"
+          echo changelog.xml > $(changelogDirTemp)/changelog.xml
         displayName: 'Fetch and Print Changelog'
+      
 
       # Step 2: Apply Changelog to Production
       - script: |
@@ -470,7 +473,7 @@ jobs:
             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
             --password="xfttiOeikUERuTxAIEoNpMpuZFlAQxgv" \
-            --changeLogFile="/liquibase/changelog/changelog.xml" \
+            --changeLogFile="$(changelogDirTemp)/changelog.xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Changelog to Production'
