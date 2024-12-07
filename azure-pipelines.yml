@@ -473,7 +473,7 @@ jobs:
             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
             --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
-            --changeLogFile="$(Build.SourcesDirectory)/repo_temp/changelog_$(Build.BuildId).xml" \
+            --changeLogFile="$(Build.SourcesDirectory)/repo/changelog_$(Build.BuildId).xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Changelog to Production'
