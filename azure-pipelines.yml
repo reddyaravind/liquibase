@@ -437,6 +437,7 @@ jobs:
 
           cd repo
           echo "Adding changelog.xml to the repository..."
+          git checkout main
           git add changelog_$(Build.BuildId).xml
 
           echo "Committing the changes..."
