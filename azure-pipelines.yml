@@ -37,10 +37,10 @@ jobs:
             $(liquibaseImage) \
             --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:47727/railway" \
             --referenceUsername="postgres" \
-            --referencePassword=$(STAGINGPASSWORD) \
+            --referencePassword="esTHFiiADwCTtWKsWuhuxErdLuMxXbEs" \
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:21343/railway" \
             --username="postgres" \
-            --password=$(PRODPASSWORD) \
+            --password="NnxSEqIpnKJSSBLrItKZoJejWVCTVxcu" \
             --changeLogFile="/liquibase/changelog/changelog_$(Build.BuildId).xml" \
             diffChangeLog
           echo "Generated changelog_$(Build.BuildId).xml:"
@@ -94,7 +94,7 @@ jobs:
             $(liquibaseImage) \
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:21343/railway" \
             --username="postgres" \
-            --password=$(PRODPASSWORD) \
+            --password="NnxSEqIpnKJSSBLrItKZoJejWVCTVxcu" \
             --changeLogFile="changelog/changelog_$(Build.BuildId).xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
