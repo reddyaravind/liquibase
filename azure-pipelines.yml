@@ -413,12 +413,12 @@ jobs:
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
-            --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:13915/railway" \
+            --referenceUrl="jdbc:postgresql://junction.proxy.rlwy.net:47727/railway" \
             --referenceUsername="postgres" \
-            --referencePassword="sTYcQKTWYMepxVUMYsRKOgyeETTCsBYv" \
-            --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
+            --referencePassword="esTHFiiADwCTtWKsWuhuxErdLuMxXbE" \
+            --url="jdbc:postgresql://autorack.proxy.rlwy.net:21343/railway" \
             --username="postgres" \
-            --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
+            --password="NnxSEqIpnKJSSBLrItKZoJejWVCTVxcu" \
             --changeLogFile="/liquibase/changelog/changelog_$(Build.BuildId).xml" \
             diffChangeLog
           echo "Generated changelog_$(Build.BuildId).xml:"
@@ -472,7 +472,7 @@ jobs:
             $(liquibaseImage) \
             --url="jdbc:postgresql://junction.proxy.rlwy.net:30985/railway" \
             --username="postgres" \
-            --password="TaLslJjADxfBXnjVdfZjCiEZQNGyuiVZ" \
+            --password=":NnxSEqIpnKJSSBLrItKZoJejWVCTVxcu" \
             --changeLogFile="changelog/changelog_$(Build.BuildId).xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
