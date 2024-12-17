@@ -110,7 +110,7 @@ variables:
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
   githubRepo: reddyaravind/liquibase  # Replace with your GitHub repository
-  githubToken: $(GITHUB_TOKEN)       # Securely store this in Azure Pipeline Secrets
+  githubToken: $(GIT_TOKEN)       # Securely store this in Azure Pipeline Secrets
 
 jobs:
   - job: GenerateAndApplyChangelog
@@ -172,14 +172,14 @@ jobs:
           git commit -m "Adding diff changelog for Build ID: $(Build.BuildId) [skip ci]" || echo "No changes to commit."
 
           echo "Pushing the changes to the 'main' branch..."
-          git push --set-upstream https://$(GITHUB_TOKEN)@github.com/reddyaravind/liquibase.git main
+          git push --set-upstream https://$(GIT_TOKEN))@github.com/reddyaravind/liquibase.git main
           echo "Changelog successfully pushed to the 'main' branch."
         displayName: 'Push Changelog to Repository'
 
       # Step 4: Fetch Changelog for Applying to Production
       - script: |
           echo "Cloning the repository to fetch changelog.xml..."
-          git clone https://$(GITHUB_TOKEN)@github.com/reddyaravind/liquibase.git repo_temp
+          git clone https://$(GIT_TOKEN)@github.com/reddyaravind/liquibase.git repo_temp
           cd repo_temp
           cd changelog
           echo "Printing fetched changelog.xml:"
