@@ -100,9 +100,15 @@
 #           echo "Liquibase update applied successfully to production database."
 #         displayName: 'Apply Changelog to Production'
 
-trigger: none
+trigger:
+  branches:
+    include:
+      - main
 
-
+pr:
+  branches:
+    include:
+      - main
 
 pool:
   name: Default
@@ -199,3 +205,4 @@ jobs:
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Changelog to Production'
+
