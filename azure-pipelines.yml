@@ -172,7 +172,7 @@ jobs:
           git commit -m "Adding diff changelog for Build ID: $(Build.BuildId) [skip ci]" || echo "No changes to commit."
 
           echo "Pushing the changes to the 'main' branch..."
-          git push --set-upstream https://$(GIT_TOKEN))@github.com/reddyaravind/liquibase.git main
+          git push --set-upstream https://$(GIT_TOKEN)@github.com/reddyaravind/liquibase.git main
           echo "Changelog successfully pushed to the 'main' branch."
         displayName: 'Push Changelog to Repository'
 
