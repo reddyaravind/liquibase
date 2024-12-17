@@ -131,10 +131,10 @@ jobs:
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
-            --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:49636/railway" \
+            --referenceUrl=$(STAGING_URL) \
             --referenceUsername="postgres" \
             --referencePassword=$(STAGING_PASSWORD) \
-            --url="jdbc:postgresql://autorack.proxy.rlwy.net:36995/railway" \
+            --url=$(PROD_URL) \
             --username="postgres" \
             --password=$(PROD_PASSWORD) \
             --changeLogFile="/liquibase/changelog/changelog_$(Build.BuildId).xml" \
@@ -193,7 +193,7 @@ jobs:
           docker run --rm \
             -v $(Build.SourcesDirectory)/changelog:/liquibase/changelog \
             $(liquibaseImage) \
-            --url="jdbc:postgresql://autorack.proxy.rlwy.net:36995/railway" \
+            --url=$(PROD_URL) \
             --username="postgres" \
             --password=$(PROD_PASSWORD) \
             --changeLogFile="changelog/changelog_$(Build.BuildId).xml" \
