@@ -111,6 +111,7 @@ variables:
   changelogDir: $(Build.SourcesDirectory)/changelog
   githubRepo: reddyaravind/liquibase  # Replace with your GitHub repository
   githubToken: $(GIT_TOKEN)       # Securely store this in Azure Pipeline Secrets
+  stagingPassword: $(STAGING_PASSWORD)
 
 jobs:
   - job: GenerateAndApplyChangelog
@@ -132,10 +133,10 @@ jobs:
             $(liquibaseImage) \
             --referenceUrl="jdbc:postgresql://autorack.proxy.rlwy.net:49636/railway" \
             --referenceUsername="postgres" \
-            --referencePassword="GZDBIhCHoSVWPWZItUljvujWXVhGSXvT" \
+            --referencePassword=$(STAGING_PASSWORD) \
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:36995/railway" \
             --username="postgres" \
-            --password="aLkrIZQQYUNOjtnGXOCuKNIVffealEqJ" \
+            --password=$(PROD_PASSWORD) \
             --changeLogFile="/liquibase/changelog/changelog_$(Build.BuildId).xml" \
             diffChangeLog
           echo "Generated changelog_$(Build.BuildId).xml:"
@@ -194,7 +195,7 @@ jobs:
             $(liquibaseImage) \
             --url="jdbc:postgresql://autorack.proxy.rlwy.net:36995/railway" \
             --username="postgres" \
-            --password="aLkrIZQQYUNOjtnGXOCuKNIVffealEqJ" \
+            --password=$(PROD_PASSWORD) \
             --changeLogFile="changelog/changelog_$(Build.BuildId).xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
