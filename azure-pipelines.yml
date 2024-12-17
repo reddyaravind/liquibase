@@ -100,15 +100,9 @@
 #           echo "Liquibase update applied successfully to production database."
 #         displayName: 'Apply Changelog to Production'
 
-trigger:
-  branches:
-    include:
-      - main
+trigger: none  # Disable automatic branch triggers
 
-pr:
-  branches:
-    include:
-      - main
+pr: none  # Disable PR-based triggers
 
 pool:
   name: Default
@@ -205,4 +199,3 @@ jobs:
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Changelog to Production'
-
