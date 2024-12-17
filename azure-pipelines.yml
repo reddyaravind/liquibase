@@ -153,7 +153,7 @@ jobs:
           cat $(changelogDir)/changelog_$(Build.BuildId).xml || echo "changelog.xml not found!"
         displayName: 'Generate and Print Diff Changelog'
 
-      # Step 3: Push Changelog to Repository
+      # Step 3: Push Changelog to Separate Branch
       - script: |
           echo "Configuring Git to push changelog.xml..."
           git config --global user.name "reddyaravind"
@@ -163,8 +163,8 @@ jobs:
           git clone https://github.com/reddyaravind/liquibase.git repo
           cd repo
 
-          echo "Checking out the main branch..."
-          git checkout main || git checkout -b main  # Ensure you're on the main branch, create it if it doesn't exist
+          echo "Checking out or creating the changelog branch..."
+          git checkout changelog || git checkout -b changelog
 
           echo "Copying changelog.xml to the repository..."
           cp $(changelogDir)/changelog_$(Build.BuildId).xml changelog/changelog_$(Build.BuildId).xml
@@ -175,11 +175,11 @@ jobs:
           echo "Committing the changes..."
           git commit -m "Build ID: $(Build.BuildId) [skip ci]"
 
-          echo "Pushing the changes to the repository..."
-          git push https://$(GIT_TOKEN)@github.com/reddyaravind/liquibase.git main || exit 1
+          echo "Pushing the changes to the changelog branch..."
+          git push https://$(GIT_TOKEN)@github.com/reddyaravind/liquibase.git changelog || exit 1
 
-          echo "Changelog successfully pushed to the repository."
-        displayName: 'Push Changelog to Repository'
+          echo "Changelog successfully pushed to the changelog branch."
+        displayName: 'Push Changelog to Changelog Branch'
 
       # Step 4: Clone repository to fetch changelog.xml for applying to production
       - script: |
@@ -205,3 +205,4 @@ jobs:
             update || exit 1
           echo "Liquibase update applied successfully to production database."
         displayName: 'Apply Changelog to Production'
+
