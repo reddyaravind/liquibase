@@ -153,15 +153,12 @@ jobs:
           cd repo
 
           echo "Checking out or creating the changelog branch..."
-          if git show-ref --verify --quiet refs/heads/changelog; then
-              echo "Branch 'changelog' exists locally."
-              git checkout changelog
-          elif git ls-remote --heads origin changelog; then
-              echo "Branch 'changelog' exists remotely. Checking out..."
-              git checkout -b changelog origin/changelog
+          if git show-ref --verify --quiet refs/heads/main; then
+              echo "Branch 'main' exists locally."
+              git checkout main
           else
-              echo "Branch 'changelog' does not exist. Creating..."
-              git checkout -b changelog
+              echo "Branch 'main' does not exist. Creating..."
+              git checkout -b main
           fi
 
           echo "Copying the generated changelog file..."
@@ -174,9 +171,9 @@ jobs:
           echo "Committing the changes..."
           git commit -m "Adding diff changelog for Build ID: $(Build.BuildId) [skip ci]" || echo "No changes to commit."
 
-          echo "Pushing the changes to the 'changelog' branch..."
-          git push --set-upstream https://$(GITHUB_TOKEN)@github.com/reddyaravind/liquibase.git changelog
-          echo "Changelog successfully pushed to the 'changelog' branch."
+          echo "Pushing the changes to the 'main' branch..."
+          git push --set-upstream https://$(GITHUB_TOKEN)@github.com/reddyaravind/liquibase.git main
+          echo "Changelog successfully pushed to the 'main' branch."
         displayName: 'Push Changelog to Repository'
 
       # Step 4: Fetch Changelog for Applying to Production
