@@ -100,7 +100,9 @@
 #           echo "Liquibase update applied successfully to production database."
 #         displayName: 'Apply Changelog to Production'
 
-trigger: none  # Ensures the pipeline triggers only when run manually
+trigger: none
+
+
 
 pool:
   name: Default
@@ -109,6 +111,7 @@ variables:
   system.debug: true
   liquibaseImage: liquibase/liquibase:4.30
   changelogDir: $(Build.SourcesDirectory)/changelog
+  changelogDirTemp: $(Build.SourcesDirectory)/changelog
   githubRepo: reddyaravind/liquibase  # Replace with your GitHub repository
   githubToken: $(GITHUB_TOKEN)  # Securely store this in Azure Pipeline Secrets
 
@@ -122,6 +125,8 @@ jobs:
           echo "Setting up changelog directory..."
           mkdir -p $(changelogDir)
           chmod -R 777 $(changelogDir)
+          mkdir -p $(Build.SourcesDirectory)/repo_temp
+          chmod -R 777 $(Build.SourcesDirectory)/repo_temp
         displayName: 'Setup Changelog Directory'
 
       # Step 2: Generate Diff Changelog
@@ -142,42 +147,43 @@ jobs:
           cat $(changelogDir)/changelog_$(Build.BuildId).xml || echo "changelog.xml not found!"
         displayName: 'Generate and Print Diff Changelog'
 
-      # Step 3: Push Changelog to Repository
+      # Step 3: Push Changelog to Separate Branch
       - script: |
-          echo "Configuring Git..."
+          echo "Configuring Git to push changelog.xml..."
           git config --global user.name "reddyaravind"
           git config --global user.email "reddyaravind838@gmail.com"
 
           echo "Cloning the repository..."
-          git clone https://$(GITHUB_TOKEN)@github.com/reddyaravind/liquibase.git repo
+          git clone https://github.com/reddyaravind/liquibase.git repo
           cd repo
 
           echo "Checking out or creating the changelog branch..."
-          git fetch origin changelog || echo "Branch 'changelog' does not exist."
           git checkout changelog || git checkout -b changelog
 
-          echo "Copying the generated changelog file..."
-          mkdir -p changelog
-          cp $(changelogDir)/changelog_$(Build.BuildId).xml changelog/
+          echo "Copying changelog.xml to the repository..."
+          cp $(changelogDir)/changelog_$(Build.BuildId).xml changelog/changelog_$(Build.BuildId).xml
 
-          echo "Adding the changelog to the repository..."
+          echo "Adding changelog.xml to the repository..."
           git add changelog/changelog_$(Build.BuildId).xml
 
           echo "Committing the changes..."
-          git commit -m "Adding diff changelog for Build ID: $(Build.BuildId) [skip ci]" || echo "No changes to commit."
+          git commit -m "Build ID: $(Build.BuildId) [skip ci]"
 
-          echo "Pushing the changes to the 'changelog' branch..."
-          git push https://$(GITHUB_TOKEN)@github.com/reddyaravind/liquibase.git changelog || exit 1
-          echo "Changelog successfully pushed to the 'changelog' branch."
-        displayName: 'Push Changelog to Repository'
+          echo "Pushing the changes to the changelog branch..."
+          git push https://$(GIT_TOKEN)@github.com/reddyaravind/liquibase.git changelog || exit 1
 
-      # Step 4: Fetch changelog.xml for applying to production
+          echo "Changelog successfully pushed to the changelog branch."
+        displayName: 'Push Changelog to Changelog Branch'
+
+      # Step 4: Clone repository to fetch changelog.xml for applying to production
       - script: |
           echo "Cloning the repository to fetch changelog.xml..."
-          git clone https://$(GITHUB_TOKEN)@github.com/reddyaravind/liquibase.git repo_temp
-          cd repo_temp/changelog
+          git clone https://github.com/reddyaravind/liquibase.git repo_temp
+          cd repo_temp
+          cd changelog
           echo "Printing fetched changelog.xml:"
           cat changelog_$(Build.BuildId).xml || echo "changelog_$(Build.BuildId).xml not found!"
+          echo changelog_$(Build.BuildId).xml > $(Build.SourcesDirectory)/repo_temp/changelog_$(Build.BuildId).xml
         displayName: 'Fetch and Print Changelog for Production'
 
       # Step 5: Apply Changelog to Production Database
