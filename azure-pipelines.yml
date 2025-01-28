@@ -131,12 +131,12 @@ jobs:
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
-            --referenceUrl=jdbc:postgresql://junction.proxy.rlwy.net:11668/railway \
+            --referenceUrl=$(STAGING_URL) \
             --referenceUsername="postgres" \
-            --referencePassword=IcyyumDliayfRuHQibvczdCpzrrpZtJl \
-            --url=jdbc:postgresql://monorail.proxy.rlwy.net:15260/railway \
+            --referencePassword=$(STAGING_PASSWORD) \
+            --url=$(PROD_URL) \
             --username="postgres" \
-            --password=qQKMPaBYTWdHKLjwbRKfsCIhXcPJQkBh \
+            --password=$(PROD_PASSWORD) \
             --changeLogFile="/liquibase/changelog/changelog_$(Build.BuildId).xml" \
             diffChangeLog
           echo "Generated changelog_$(Build.BuildId).xml:"
@@ -193,9 +193,9 @@ jobs:
           docker run --rm \
             -v $(Build.SourcesDirectory)/changelog:/liquibase/changelog \
             $(liquibaseImage) \
-            --url=jdbc:postgresql://monorail.proxy.rlwy.net:15260/railway \
+            --url=$(PROD_URL) \
             --username="postgres" \
-            --password=qQKMPaBYTWdHKLjwbRKfsCIhXcPJQkBh \
+            --password=$(PROD_PASSWORD) \
             --changeLogFile="changelog/changelog_$(Build.BuildId).xml" \
             update || exit 1
           echo "Liquibase update applied successfully to production database."
