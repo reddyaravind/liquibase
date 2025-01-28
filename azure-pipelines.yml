@@ -131,10 +131,10 @@ jobs:
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
-            --referenceUrl=jdbc:postgresql://autorack.proxy.rlwy.net:49636/railway \
+            --referenceUrl=jdbc:postgresql://junction.proxy.rlwy.net:11668/railway \
             --referenceUsername="postgres" \
             --referencePassword=IcyyumDliayfRuHQibvczdCpzrrpZtJl \
-            --url=jdbc:postgresql://autorack.proxy.rlwy.net:36995/railway \
+            --url=jdbc:postgresql://monorail.proxy.rlwy.net:15260/railway \
             --username="postgres" \
             --password=qQKMPaBYTWdHKLjwbRKfsCIhXcPJQkBh \
             --changeLogFile="/liquibase/changelog/changelog_$(Build.BuildId).xml" \
@@ -193,7 +193,7 @@ jobs:
           docker run --rm \
             -v $(Build.SourcesDirectory)/changelog:/liquibase/changelog \
             $(liquibaseImage) \
-            --url=jdbc:postgresql://autorack.proxy.rlwy.net:36995/railway \
+            --url=jdbc:postgresql://monorail.proxy.rlwy.net:15260/railway \
             --username="postgres" \
             --password=qQKMPaBYTWdHKLjwbRKfsCIhXcPJQkBh \
             --changeLogFile="changelog/changelog_$(Build.BuildId).xml" \
