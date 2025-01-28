@@ -131,7 +131,7 @@ jobs:
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
-            --referenceUrl=jdbc:postgresql://autorack.proxy.rlwy.net:49636/railway \
+            --referenceUrl=jdbc:postgresql://junction.proxy.rlwy.net:11668/railway \
             --referenceUsername="postgres" \
             --referencePassword=IcyyumDliayfRuHQibvczdCpzrrpZtJl \
             --url=jdbc:postgresql://monorail.proxy.rlwy.net:15260/railway \
