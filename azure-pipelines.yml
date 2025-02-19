@@ -273,7 +273,7 @@ jobs:
             --referenceUsername="postgres" \
             --referencePassword="CWeTDoXHIEFQDzZPqEAdmrIqtybWpfOc" \
             --url="jdbc:postgresql://dart-testing-db-server.postgres.database.azure.com:5432/postgres?sslmode=require&sslrootcert=$(Pipeline.Workspace)/root_ca.pem" \
-            --username="Aravind.Reddy@donyati.com" \
+            --username="dr_mgrtn_srvc" \
             --password="admin" \
             --changeLogFile="/liquibase/changelog/changelog_$(Build.BuildId).xml" \
             diffChangeLog
