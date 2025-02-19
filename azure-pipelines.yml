@@ -269,7 +269,7 @@ jobs:
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
-            --referenceUrl="jdbc:postgresql:dart-development-db-server.postgres.database.azure.com:5432/db_datarecon" \
+            --referenceUrl="jdbc:postgresql://dart-development-db-server.postgres.database.azure.com:5432/db_datarecon" \
             --referenceUsername="dr_mgrtn_srvc" \
             --referencePassword="admin" \
             --url="jdbc:postgresql://dart-testing-db-server.postgres.database.azure.com:5432/postgres?sslmode=require&sslrootcert=$(Pipeline.Workspace)/root_ca.pem" \
