@@ -269,9 +269,9 @@ jobs:
           docker run --rm \
             -v $(changelogDir):/liquibase/changelog \
             $(liquibaseImage) \
-            --referenceUrl="jdbc:postgresql://maglev.proxy.rlwy.net:57924/railway" \
-            --referenceUsername="postgres" \
-            --referencePassword="CWeTDoXHIEFQDzZPqEAdmrIqtybWpfOc" \
+            --referenceUrl="jdbc:postgresql:dart-development-db-server.postgres.database.azure.com:5432/db_datarecon" \
+            --referenceUsername="dr_mgrtn_srvc" \
+            --referencePassword="admin" \
             --url="jdbc:postgresql://dart-testing-db-server.postgres.database.azure.com:5432/postgres?sslmode=require&sslrootcert=$(Pipeline.Workspace)/root_ca.pem" \
             --username="dr_mgrtn_srvc" \
             --password="admin" \
