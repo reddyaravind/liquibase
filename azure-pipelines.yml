@@ -276,6 +276,7 @@ jobs:
             --username="dr_mgrtn_srvc" \
             --password="admin" \
             --changeLogFile="/liquibase/changelog/changelog_$(Build.BuildId).xml" \
+            --schemas=public,recon_meta,recon_audit \
             diffChangeLog
           echo "Generated changelog_$(Build.BuildId).xml:"
           cat $(changelogDir)/changelog_$(Build.BuildId).xml || echo "changelog.xml not found!"
